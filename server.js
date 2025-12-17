@@ -1,16 +1,33 @@
 const express = require('express');
 const app = express();
 const port = 3000;
+const session = require('express-session')
+const { requireAuth } = require('./module/auth/requireAuth')
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.set('views' , './views');
 app.set('view engine', 'ejs')
 
+app.use(session({
+  
+  secret: 'abc',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    maxAge: 24 * 60 * 60 * 1000
+  }
+}))
+
 
 // ==============  INDEX  =============== //
 app.get('/',(req,res)=>{
     res.render('index')
+})
+
+// ==============  HOME  =============== //
+app.get('/home', requireAuth ,(req,res)=>{
+    res.render('home', { user: req.session.user })
 })
 
 // ==============  REGISTER  =============== //
@@ -21,10 +38,15 @@ app.get('/register', (req, res) => {
 
 app.post('/register', register)
 
-// ==============  LOGIN  =============== //
+// ==============  LOGIN && LOGOUT =============== //
 const login = require('./module/auth/login')
-app.post('/login', login)
+const logout = require('./module/auth/logout')
+app.get('/login',(req,res)=>{
+    res.render('login')
+})
 
+app.post('/login', login)
+app.post('/logout', logout)
 
 // ============== PORT =============== //
 app.listen(port, '0.0.0.0' ,()=>{
