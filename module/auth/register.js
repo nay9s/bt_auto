@@ -6,7 +6,7 @@ const { promisePool: sql } = require('../sql/mysql');
 module.exports = async function register(req, res) {
     const { username, password, email, firstname, lastname } = req.body
     if (!username || !password || !email || !firstname || !lastname) {
-        return res.render('register', { error: 'กรุณากรอกข้อมูลให้ครบ', msg: null })
+      return res.json({ success: false, error: 'กรุณากรอกข้อมูลให้ครบ' });
     }
 
     try {
@@ -23,6 +23,10 @@ module.exports = async function register(req, res) {
           }else if(users[0].email == email){
             return res.json({ success: false, error: 'Email นี้มีผู้ใช้งานแล้ว' });
           }
+        }
+
+        if(password.length < 8){
+          return res.json({ success: false, error: 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร' });
         }
 
         const [insertResult] = await sql.query(
