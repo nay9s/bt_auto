@@ -1,0 +1,47 @@
+const bcrypt = require('bcrypt')
+
+//เรียกใช้ promisePool แต่ตั้งชื่อว่า sql
+const { promisePool: sql } = require('../sql/mysql');
+
+module.exports = async function register(req, res) {
+    const { username, password, email, firstname, lastname } = req.body
+    if (!username || !password || !email || !firstname || !lastname) {
+        return res.render('register', { error: 'กรุณากรอกข้อมูลให้ครบ', msg: null })
+    }
+
+    try {
+        const hashPassword = await bcrypt.hash(password, 10)
+        const [users] = await sql.query(
+          'SELECT username , email FROM users WHERE username = ? OR email = ?', [username, email]
+        )
+
+        if (users.length > 0) {
+          if(users[0].email == email && users[0].username == username){
+            return res.json({ success: false, error: 'คุณมีบัญชีอยู่แล้ว' });
+          }else if(users[0].username == username){
+            return res.json({ success: false, error: 'ชื่อถูกใช้งานแล้ว' });
+          }else if(users[0].email == email){
+            return res.json({ success: false, error: 'Email นี้มีผู้ใช้งานแล้ว' });
+          }
+        }
+
+        const [insertResult] = await sql.query(
+            'INSERT INTO users (username, password_hash, email, first_name, last_name) VALUES (?, ?, ?, ?, ?)',
+            [username, hashPassword, email, firstname, lastname]
+        )
+        
+        // console.log(insertResult);
+        const userID = insertResult.insertId
+
+        await sql.query(
+            "INSERT INTO user_roles (user_id, role_id) SELECT ?, id FROM roles WHERE name = 'user'",
+            [userID]
+        )
+
+        return res.json({ success: true, msg: 'สมัครสมาชิกสำเร็จ!' });
+
+    } catch (err) {
+        console.error(err)
+        return res.json({ success: false, error: 'เกิดข้อผิดพลาดในการสมัครสมาชิก' });
+    }
+}
