@@ -1,8 +1,10 @@
-"# Use Docker to install
-Create .env
+"# Use Docker to install"
+
+"Create .env FILE"
+
 `DB_HOST=<DATABASE_HOST>
 DB_USER=<DATABASE_USER>
 DB_PASSWORD=<DATABASE-PASSWORD>
 DB_NAME=<NAME>
 DB_PORT=<PORT>
-`" 
+`
