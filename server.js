@@ -21,6 +21,9 @@ app.get('/register', (req, res) => {
 
 app.post('/register', register)
 
+// ==============  LOGIN  =============== //
+const login = require('./module/auth/login')
+app.post('/login', login)
 
 
 // ============== PORT =============== //

@@ -6,13 +6,18 @@ services:
     container_name: mysql_db
     restart: always
     environment:
+
+    #set config database
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: mydb
       MYSQL_USER: user
       MYSQL_PASSWORD: pass
+      
     ports:
+    #<External-Port> : <InDocker-Port>
       - "3307:3306"
     volumes:
+    #Keep-SQL-Data-In-This-Path
       - mysql_data:/var/lib/mysql
 
   web:
@@ -20,6 +25,7 @@ services:
     container_name: node_web
     command: npx nodemon -L server.js
     ports:
+    #server port
       - "3000:3000"
     env_file:
       - .env
