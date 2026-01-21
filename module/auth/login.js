@@ -6,14 +6,18 @@ module.exports = async function login(req,res) {
     try{
         const [users] = await sql.query('SELECT id, username, email, first_name, last_name, password_hash FROM users WHERE username = ? or email = ?', [username, username])
         if(users.length < 1){
-            return res.json({success : false , error : 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง .'})
+            return res.render('login', {
+                error: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
+            });
         }
 
         const user = users[0]
 
         const ValidPass = await bcrypt.compare(password,user.password_hash)
         if(!ValidPass){
-            return res.json({success: false, error : 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'})
+            return res.render('login', {
+                error: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
+            });
         }
 
         //u = username // ur = user_roles // r = roles
@@ -27,7 +31,9 @@ module.exports = async function login(req,res) {
         )
 
         if (roles.length < 1) {
-            return res.json({ success: false, error: 'ผู้ใช้ยังไม่มี role' })
+            return res.render('login', {
+                error: 'ผู้ใช้ยังไม่มี Role'
+            });
         }
 
         console.log(`${roles.map(r => r.name)}`)
@@ -41,11 +47,13 @@ module.exports = async function login(req,res) {
             roles: roles.map(r => r.role_name)
         }
 
-        return res.json({success:true,msg:'เข้าสู่ระบบสำเร็จ'})
+        return res.redirect('/home');
         
     }catch(err){
         console.error(err);
-        return res.json({success:false , error : 'Server เกิดข้อผิดพลาด'})
+        return res.render('login', {
+            error: 'server เกิดข้อผิดพลาด'
+        });
     }
 
 }

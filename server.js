@@ -3,9 +3,11 @@ const app = express();
 const port = 3000;
 const session = require('express-session')
 const { requireAuth } = require('./module/auth/requireAuth')
+const path = require('path');
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
+app.use(express.static(path.join(__dirname, 'public')));
 app.set('views' , './views');
 app.set('view engine', 'ejs')
 
@@ -42,7 +44,7 @@ app.post('/register', register)
 const login = require('./module/auth/login')
 const logout = require('./module/auth/logout')
 app.get('/login',(req,res)=>{
-    res.render('login')
+    res.render('login',{ error: null })
 })
 
 app.post('/login', login)
