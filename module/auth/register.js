@@ -40,8 +40,8 @@ const passwordCheck = (password,confirmPassword) => {
 
 
 module.exports = async function register(req, res) {
-  const { username, password, confirmPassword , email, firstname, lastname } = req.body
-  if (!username || !password || !email || !firstname || !lastname) {
+  const { username, password, confirmPassword , email, firstname, lastname} = req.body
+  if (!username || !password || !email || !firstname || !lastname || !confirmPassword) {
     return res.json({ success: false, error: 'กรุณากรอกข้อมูลให้ครบ' });
   }
 
