@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รถของฉัน - BT Auto Service</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .hero-bg {
+            background: #198754;
+            color: white;
+            padding: 40px 0;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <%- include('partials/navbar', {user: user}) %> <!-- Assuming partials, but will inline for now if missing -->
+        <!-- Temp Navbar -->
+        <nav class="navbar navbar-dark bg-dark mb-4">
+            <div class="container">
+                <a class="navbar-brand" href="/home">BT Auto Service</a>
+                <span class="text-white">สวัสดี, <%= user.username %></span>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-car me-2"></i>รถยนต์ของฉัน</h2>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCarModal">
+                    <i class="fas fa-plus"></i> เพิ่มรถใหม่
+                </button>
+            </div>
+
+            <div class="row" id="carList">
+                <!-- Cars will be loaded here via JS -->
+                <div class="col-12 text-center p-5">
+                    <div class="spinner-border text-success"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Add Car -->
+        <div class="modal fade" id="addCarModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">เพิ่มรถใหม่</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addCarForm">
+                            <div class="mb-3">
+                                <label>ทะเบียนรถ</label>
+                                <input type="text" class="form-control" name="license_plate" required
+                                    placeholder="เช่น 1กข 9999">
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label>ยี่ห้อ</label>
+                                    <input type="text" class="form-control" name="brand" required placeholder="Toyota">
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label>รุ่น</label>
+                                    <input type="text" class="form-control" name="model" required placeholder="Camry">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label>ปี</label>
+                                <input type="number" class="form-control" name="year" placeholder="2020">
+                            </div>
+                            <div class="mb-3">
+                                <label>สี</label>
+                                <input type="text" class="form-control" name="color" placeholder="ขาว">
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">บันทึก</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Load Cars
+            fetch('/api/cars/my')
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('carList');
+                    list.innerHTML = '';
+                    if (data.success && data.cars.length > 0) {
+                        data.cars.forEach(car => {
+                            list.innerHTML += `
+                            <div class="col-md-4 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title fw-bold text-success">${car.license_plate}</h5>
+                                        <p class="card-text text-muted">${car.brand} ${car.model} (${car.year})</p>
+                                        <span class="badge bg-secondary">${car.color}</span>
+                                    </div>
+                                    <div class="card-footer bg-white border-0">
+                                        <button class="btn btn-outline-primary btn-sm w-100">ดูประวัติซ่อม</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        });
+                    } else {
+                        list.innerHTML = '<div class="col-12 text-center text-muted">ยังไม่มีข้อมูลรถยนต์</div>';
+                    }
+                });
+
+            // Add Car
+            document.getElementById('addCarForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const formData = new FormData(this); // Would normally use JSON for this API
+                const data = Object.fromEntries(formData.entries());
+
+                fetch('/api/cars/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.success) {
+                            alert('เพิ่มรถสำเร็จ');
+                            location.reload();
+                        } else {
+                            alert(res.error);
+                        }
+                    });
+            });
+        </script>
+</body>
+
+</html>

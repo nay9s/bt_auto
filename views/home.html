@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview: ระบบจัดการอู่ซ่อมรถ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #f0f2f5; }
+        .hero-bg { background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%); color: white; padding: 60px 0; border-radius: 0 0 30px 30px; }
+        .nav-pills .nav-link.active { background-color: #1a237e; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .status-badge { padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; }
+        /* สไตล์ Sidebar สำหรับหน้าช่าง */
+        .sidebar { background: #fff; height: 100%; border-right: 1px solid #ddd; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary"><i class="fas fa-tools me-2"></i>Garage Project</h2>
+        <ul class="nav nav-pills" id="pills-tab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="pills-customer-tab" data-bs-toggle="pill" data-bs-target="#customer-view">มุมมองลูกค้า (Index)</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="pills-mechanic-tab" data-bs-toggle="pill" data-bs-target="#mechanic-view">มุมมองช่าง (Dashboard)</button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content" id="pills-tabContent">
+        
+        <div class="tab-pane fade show active" id="customer-view">
+            <header class="hero-bg text-center mb-5">
+                <h1 class="display-5 fw-bold">ติดตามสถานะการซ่อม</h1>
+                <p>สะดวก โปร่งใส ตรวจสอบได้ทุกขั้นตอน</p>
+                <div class="container mt-4">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="input-group input-group-lg shadow">
+                                <input type="text" class="form-control" placeholder="กรอกเลขทะเบียนรถ เช่น 1กข 9999">
+                                <button class="btn btn-warning fw-bold">ค้นหา</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card p-4 text-center">
+                        <i class="fas fa-camera-retro fa-3x text-primary mb-3"></i>
+                        <h5>ระบบจัดการรูปถ่าย</h5>
+                        <p class="text-muted small">เห็นภาพรถก่อนและหลังซ่อมจริง เพิ่มความมั่นใจให้ลูกค้า</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4 text-center">
+                        <i class="fas fa-history fa-3x text-success mb-3"></i>
+                        <h5>ประวัติออนไลน์</h5>
+                        <p class="text-muted small">บันทึกข้อมูลการซ่อมย้อนหลัง ไม่ต้องกลัวใบเสร็จหาย</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4 text-center">
+                        <i class="fas fa-check-circle fa-3x text-info mb-3"></i>
+                        <h5>เช็คสถานะ 24 ชม.</h5>
+                        <p class="text-muted small">ไม่ต้องโทรตามช่าง ดูสถานะผ่านเว็บได้ทันที</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="mechanic-view">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-info border-0 shadow-sm">
+                        <i class="fas fa-user-cog me-2"></i> ยินดีต้อนรับคุณ <strong>Admin</strong> | วันนี้มีรถรอซ่อมใหม่ <strong>3 คัน</strong>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white p-3">
+                                <div class="small">งานทั้งหมด</div>
+                                <div class="h3 fw-bold">45</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-dark p-3">
+                                <div class="small">กำลังซ่อม</div>
+                                <div class="h3 fw-bold">8</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white p-3">
+                                <div class="small">ซ่อมเสร็จแล้ว</div>
+                                <div class="h3 fw-bold">32</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white p-3">
+                                <div class="small">รออะไหล่</div>
+                                <div class="h3 fw-bold">5</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header bg-white fw-bold py-3">
+                            <i class="fas fa-list me-2"></i> รายการรถซ่อมปัจจุบัน
+                        </div>
+                        <div class="table-responsive p-3">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ทะเบียนรถ</th>
+                                        <th>ยี่ห้อ/รุ่น</th>
+                                        <th>อาการแจ้งซ่อม</th>
+                                        <th>สถานะ</th>
+                                        <th>การจัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>1กข 9999</strong></td>
+                                        <td>Toyota Camry</td>
+                                        <td>เปลี่ยนน้ำมันเครื่อง</td>
+                                        <td><span class="status-badge bg-warning">กำลังดำเนินการ</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-sm btn-outline-success"><i class="fas fa-camera"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>สส 4455</strong></td>
+                                        <td>Honda Civic</td>
+                                        <td>เบรกเสียงดัง</td>
+                                        <td><span class="status-badge bg-danger text-white">รออะไหล่</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-sm btn-outline-success"><i class="fas fa-camera"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
