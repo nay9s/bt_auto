@@ -1,0 +1,41 @@
+
+body {
+    font-family: 'Prompt', sans-serif;
+    background-color: #f0f2f5;
+}
+
+.hero-bg {
+    background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+    color: white;
+    padding: 60px 0;
+    border-radius: 0 0 30px 30px;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #1a237e;
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.status-badge {
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+/* สไตล์ Sidebar สำหรับหน้าช่าง */
+.sidebar {
+    background: #fff;
+    height: 100%;
+    border-right: 1px solid #ddd;
+    padding: 20px;
+}

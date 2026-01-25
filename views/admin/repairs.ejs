@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการงานซ่อม - BT Auto Service</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/manage_repairs.css">
+
+</head>
+
+<body>
+
+    <%- include('sidebar') %>
+
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">จัดการงานซ่อม (Repair Jobs)</h2>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createJobModal">
+                    <i class="fas fa-plus"></i> เปิดงานซ่อมใหม่
+                </button>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Job ID</th>
+                                <th>ทะเบียนรถ</th>
+                                <th>อาการเสีย</th>
+                                <th>สถานะ</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobsTable">
+                            <!-- Loaded via JS (Mock for now if API not ready, but we will use real API) -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Create Job -->
+        <div class="modal fade" id="createJobModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">เปิดงานซ่อมใหม่</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="createJobForm">
+                            <div class="mb-3">
+                                <label>เลือกรถยนต์ (ค้นหาด้วยทะเบียน)</label>
+                                <input type="text" class="form-control" name="license_search" id="carSearch"
+                                    placeholder="ค้นหาทะเบียน..." autocomplete="off">
+                                <input type="hidden" name="car_id" id="selectedCarId">
+                                <div id="carSearchResults" class="list-group mt-1"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label>อาการที่แจ้ง</label>
+                                <textarea class="form-control" name="description" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label>ราคาประเมินเบื้องต้น</label>
+                                <input type="number" class="form-control" name="estimated_cost" value="0">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">บันทึกเปิดงาน</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // 1. Search Car Functionality
+            const carSearchInput = document.getElementById('carSearch');
+            const carResults = document.getElementById('carSearchResults');
+
+            carSearchInput.addEventListener('input', function () {
+                const query = this.value;
+                if (query.length < 2) { carResults.innerHTML = ''; return; }
+
+                // In a real app this would call /api/cars/search?query=...
+                // For now, assuming we implement that endpoint or Mock it
+                // Simple mockup behavior:
+                carResults.innerHTML = `<a href="#" class="list-group-item list-group-item-action" onclick="selectCar(1, '${query}')">รถทะเบียน ${query} (Mock)</a>`;
+            });
+
+            function selectCar(id, plate) {
+                document.getElementById('selectedCarId').value = id; // In real usage this ID must come from DB
+                document.getElementById('carSearch').value = plate;
+                carResults.innerHTML = '';
+            }
+
+            // 2. Submit Job
+            document.getElementById('createJobForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const data = {
+                    car_id: document.getElementById('selectedCarId').value || 1, // Fallback to 1 for demo if search fails
+                    mechanic_id: 1, // Defaulting to admin/current user for now
+                    description: this.elements['description'].value,
+                    estimated_cost: this.elements['estimated_cost'].value
+                };
+
+                fetch('/api/jobs/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.success) {
+                            alert('เปิดงานซ่อมเรียบร้อย');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + res.error);
+                        }
+                    });
+            });
+
+            // 3. Load Jobs (Mock or Real)
+            // Would fetch /api/jobs/all
+            const tbody = document.getElementById('jobsTable');
+            tbody.innerHTML = `
+            <tr>
+                <td>#101</td>
+                <td>1กข 9999</td>
+                <td>เปลี่ยนน้ำมันเครื่อง</td>
+                <td><span class="badge bg-warning">กำลังซ่อม</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary">รายละเอียด</button>
+                </td>
+            </tr>
+        `;
+        </script>
+</body>
+
+</html>

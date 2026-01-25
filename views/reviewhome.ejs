@@ -4,229 +4,324 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review: ระบบจัดการอู่ซ่อมรถ</title>
+    <title>อู่บีที ออโต้เซอร์วิส - BT Auto Service</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>
-        :root {
-            --primary-green: #198754;
-            --dark-green: #0f5132;
-            --accent-red: #dc3545;
-            --deep-black: #000000;
-        }
-
-        body {
-            font-family: 'Prompt', sans-serif;
-            background-color: #f8f9fa;
-        }
-
-        /* Green to Black gradient */
-        .hero-bg {
-            background: linear-gradient(135deg, var(--deep-black) 0%, var(--primary-green) 100%);
-            color: white;
-            padding: 60px 0;
-            border-radius: 0 0 30px 30px;
-        }
-
-        .nav-pills .nav-link.active {
-            background-color: var(--primary-green);
-        }
-
-        .nav-link {
-            color: var(--deep-black);
-        }
-
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: 0.3s;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        .status-badge {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-        }
-
-        .sidebar {
-            background: #fff;
-            height: 100%;
-            border-right: 1px solid #ddd;
-            padding: 20px;
-        }
-
-        .text-theme-green {
-            color: var(--primary-green);
-        }
-
-        .btn-theme-green {
-            background-color: var(--primary-green);
-            color: white;
-            border: none;
-        }
-
-        .btn-theme-green:hover {
-            background-color: var(--dark-green);
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/reviewhome.css">
 </head>
 
 <body>
 
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold text-theme-green"><i class="fas fa-tools me-2"></i>Garage Project (Review)</h2>
-            <ul class="nav nav-pills" id="pills-tab" role="tablist">
-                <li class="nav-item">
-                    <button class="nav-link active" id="pills-customer-tab" data-bs-toggle="pill"
-                        data-bs-target="#customer-view">มุมมองลูกค้า (Index)</button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="pills-mechanic-tab" data-bs-toggle="pill"
-                        data-bs-target="#mechanic-view">มุมมองช่าง (Dashboard)</button>
-                </li>
-            </ul>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-car-side"></i>
+                <div>
+                    <div style="font-size: 0.9rem; line-height: 1.2;">อู่บีที ออโต้เซอร์วิส</div>
+                    <div style="font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px;">BT Auto
+                        Service</div>
+                </div>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link active" href="#">หน้าแรก</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#services">บริการของเรา</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#reviews">รีวิว</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">ติดต่อเรา</a></li>
+                    <% if (user) { %>
+                        <li class="nav-item ms-3">
+                            <a href="/home" class="btn-login">Dashboard (<%= user.username %>)</a>
+                        </li>
+                        <% } else { %>
+                            <li class="nav-item ms-3">
+                                <a href="/login" class="btn-login">เข้าสู่ระบบ</a>
+                            </li>
+                            <% } %>
+                </ul>
+            </div>
         </div>
+    </nav>
 
-        <div class="tab-content" id="pills-tabContent">
-
-            <div class="tab-pane fade show active" id="customer-view">
-                <header class="hero-bg text-center mb-5">
-                    <h1 class="display-5 fw-bold">ติดตามสถานะการซ่อม</h1>
-                    <p>สะดวก โปร่งใส ตรวจสอบได้ทุกขั้นตอน</p>
-                    <div class="container mt-4">
-                        <div class="row justify-content-center">
-                            <div class="col-md-6">
-                                <div class="input-group input-group-lg shadow">
-                                    <input type="text" class="form-control"
-                                        placeholder="กรอกเลขทะเบียนรถ เช่น 1กข 9999">
-                                    <button class="btn btn-danger fw-bold">ค้นหา</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <div class="card p-4 text-center">
-                            <i class="fas fa-camera-retro fa-3x text-theme-green mb-3"></i>
-                            <h5>ระบบจัดการรูปถ่าย</h5>
-                            <p class="text-muted small">เห็นภาพรถก่อนและหลังซ่อมจริง เพิ่มความมั่นใจให้ลูกค้า</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card p-4 text-center">
-                            <i class="fas fa-history fa-3x text-danger mb-3"></i>
-                            <h5>ประวัติออนไลน์</h5>
-                            <p class="text-muted small">บันทึกข้อมูลการซ่อมย้อนหลัง ไม่ต้องกลัวใบเสร็จหาย</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card p-4 text-center">
-                            <i class="fas fa-check-circle fa-3x text-dark mb-3"></i>
-                            <h5>เช็คสถานะ 24 ชม.</h5>
-                            <p class="text-muted small">ไม่ต้องโทรตามช่าง ดูสถานะผ่านเว็บได้ทันที</p>
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1>บริการซ่อมรถรวดเร็ว<br>ทันใจ</h1>
+                        <p><i class="far fa-clock me-2"></i> เวลาทำการ : 08.00 - 18.00</p>
+                        <div class="d-flex">
+                            <a href="/login" class="btn-hero-primary"><i class="fas fa-sign-in-alt me-2"></i>
+                                เข้าสู่ระบบ</a>
+                            <a href="#contact" class="btn-hero-danger"><i class="fas fa-phone-alt me-2"></i> โทรเลย</a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </header>
 
-            <div class="tab-pane fade" id="mechanic-view">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="alert alert-dark border-0 shadow-sm text-white"
-                            style="background-color: var(--deep-black);">
-                            <i class="fas fa-user-cog me-2"></i> ยินดีต้อนรับคุณ <strong>Admin</strong> |
-                            วันนี้มีรถรอซ่อมใหม่ <strong>3 คัน</strong>
-                        </div>
+    <!-- Services Section -->
+    <section id="services" class="py-5" style="background-color: #050505;">
+        <div class="container py-5">
+            <div class="section-header">
+                <span class="section-sub">OUR SERVICES</span>
+                <h2 class="section-title">บริการของเรา</h2>
+                <p class="text-gray mt-3">เราให้บริการดูแลรถยนต์แบบครบวงจร ด้วยเครื่องมือทันสมัยและทีมช่างมากประสบการณ์
+                </p>
+            </div>
 
-                        <div class="row mb-4">
-                            <div class="col-md-3">
-                                <div class="card bg-success text-white p-3">
-                                    <div class="small">งานทั้งหมด</div>
-                                    <div class="h3 fw-bold">45</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-warning text-dark p-3">
-                                    <div class="small">กำลังซ่อม</div>
-                                    <div class="h3 fw-bold">8</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-dark text-white p-3">
-                                    <div class="small">ซ่อมเสร็จแล้ว</div>
-                                    <div class="h3 fw-bold">32</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-danger text-white p-3">
-                                    <div class="small">รออะไหล่</div>
-                                    <div class="h3 fw-bold">5</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header bg-white fw-bold py-3 border-bottom border-success">
-                                <i class="fas fa-list me-2 text-theme-green"></i> รายการรถซ่อมปัจจุบัน
-                            </div>
-                            <div class="table-responsive p-3">
-                                <table class="table table-hover align-middle">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>ทะเบียนรถ</th>
-                                            <th>ยี่ห้อ/รุ่น</th>
-                                            <th>อาการแจ้งซ่อม</th>
-                                            <th>สถานะ</th>
-                                            <th>การจัดการ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td><strong>1กข 9999</strong></td>
-                                            <td>Toyota Camry</td>
-                                            <td>เปลี่ยนน้ำมันเครื่อง</td>
-                                            <td><span class="status-badge bg-warning text-dark">กำลังดำเนินการ</span>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-success"><i
-                                                        class="fas fa-eye"></i></button>
-                                                <button class="btn btn-sm btn-outline-dark"><i
-                                                        class="fas fa-camera"></i></button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>สส 4455</strong></td>
-                                            <td>Honda Civic</td>
-                                            <td>เบรกเสียงดัง</td>
-                                            <td><span class="status-badge bg-danger text-white">รออะไหล่</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-success"><i
-                                                        class="fas fa-eye"></i></button>
-                                                <button class="btn btn-sm btn-outline-dark"><i
-                                                        class="fas fa-camera"></i></button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fas fa-shield-alt"></i></div>
+                        <h4>ตรวจเช็คสภาพรถยนต์</h4>
+                        <p>บริการตรวจเช็คความพร้อมของรถก่อนเดินทางและตรวจเช็คตามระยะทางอย่างละเอียด</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fas fa-oil-can"></i></div>
+                        <h4>เปลี่ยนถ่ายน้ำมันเครื่อง</h4>
+                        <p>บริการเปลี่ยนถ่ายน้ำมันเครื่องเกรดพรีเมียม และไส้กรอง เพื่อดูแลเครื่องยนต์ให้สะอาด</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fas fa-cogs"></i></div>
+                        <h4>ซ่อมช่วงล่างและเบรก</h4>
+                        <p>ซ่อมบำรุงช่วงล่าง โช๊คอัพ ลูกหมาก และระบบเบรก เพื่อความปลอดภัยในการขับขี่</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fas fa-wrench"></i></div>
+                        <h4>ซ่อมเครื่องยนต์</h4>
+                        <p>วิเคราะห์ปัญหาและซ่อมแซมระบบเครื่องยนต์และระบบเกียร์ด้วยเครื่องมือที่ได้มาตรฐาน</p>
                     </div>
                 </div>
             </div>
 
+            <div class="text-center mt-5">
+                <a href="#" class="btn btn-outline-light px-4 py-2" style="border-radius: 50px;">ดูบริการทั้งหมด ></a>
+            </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews" class="py-5 bg-dark">
+        <div class="container py-5">
+            <div class="section-header">
+                <span class="section-sub">CUSTOMER REVIEWS</span>
+                <h2 class="section-title">รีวิวจากลูกค้า</h2>
+                <p class="text-gray mt-3">เสียงตอบรับจากลูกค้าที่ไว้วางใจใช้บริการกับเรา</p>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="review-stats">
+                <div class="d-flex align-items-center">
+                    <div class="rating-number me-3">4.8</div>
+                    <div>
+                        <div class="stars">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                class="fas fa-star"></i><i class="fas fa-star text-secondary"></i>
+                        </div>
+                        <small class="text-muted">จาก 560 รีวิว</small>
+                    </div>
+                </div>
+                <button class="btn btn-success rounded-pill px-4"><i class="fas fa-pen me-2"></i> เขียนรีวิว</button>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="review-card">
+                        <div class="reviewer-info">
+                            <img src="https://ui-avatars.com/api/?name=Somchai+Jai&background=0D8ABC&color=fff"
+                                class="reviewer-avatar" alt="User">
+                            <div>
+                                <h6 class="mb-0 fw-bold">คุณสมชาย ใจดี</h6>
+                                <small class="text-muted">2 วันที่แล้ว</small>
+                            </div>
+                            <div class="ms-auto text-warning fw-bold">★ 5.0</div>
+                        </div>
+                        <p class="review-text">"บริการดีมากครับ ช่างให้คำแนะนำละเอียดไม่มีการยัดเยียดขายอะไหล่
+                            ประทับใจในความซื่อสัตย์"</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="review-card">
+                        <div class="reviewer-info">
+                            <img src="https://ui-avatars.com/api/?name=Vipa+Rak&background=e74c3c&color=fff"
+                                class="reviewer-avatar" alt="User">
+                            <div>
+                                <h6 class="mb-0 fw-bold">คุณวิภา รักรถ</h6>
+                                <small class="text-muted">1 สัปดาห์ที่แล้ว</small>
+                            </div>
+                            <div class="ms-auto text-warning fw-bold">★ 5.0</div>
+                        </div>
+                        <p class="review-text">"เปลี่ยนยางที่นี่ราคาดีมากครับ บริการรวดเร็ว พนักงานพูดจาดี
+                            ห้องรับรองสะดวกสบาย"</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="review-card">
+                        <div class="reviewer-info">
+                            <img src="https://ui-avatars.com/api/?name=Ekk+Chuang&background=f1c40f&color=fff"
+                                class="reviewer-avatar" alt="User">
+                            <div>
+                                <h6 class="mb-0 fw-bold">คุณเอก ซ่อมช่วงล่าง</h6>
+                                <small class="text-muted">2 สัปดาห์ที่แล้ว</small>
+                            </div>
+                            <div class="ms-auto text-warning fw-bold">★ 5.0</div>
+                        </div>
+                        <p class="review-text">"มาใช้บริการซ่อมเบรค รู้สึกปลอดภัยขึ้นเยอะครับ งานละเอียดเรียบร้อย
+                            ช่างมีความชำนาญ"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <div class="section-header text-start mb-5">
+                <h2 class="section-title">ติดต่อเรา</h2>
+                <div class="divider bg-danger" style="width: 60px; height: 4px; margin-top: 10px;"></div>
+                <p class="text-gray mt-3">เราพร้อมให้บริการและคำปรึกษาเกี่ยวกับรถยนต์ของคุณ</p>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="contact-info-card h-100">
+                        <h4 class="fw-bold mb-4">ข้อมูลติดต่อ</h4>
+
+                        <div class="d-flex mb-4">
+                            <i class="fas fa-map-marker-alt text-danger me-3 fs-4"></i>
+                            <div>
+                                <h6 class="fw-bold">ที่อยู่</h6>
+                                <p class="text-muted small mb-0">123 ถ.สุขุมวิท แขวงคลองตันเหนือ เขตวัฒนา กรุงเทพมหานคร
+                                    10110</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex mb-4">
+                            <i class="fas fa-phone-alt text-danger me-3 fs-4"></i>
+                            <div>
+                                <h6 class="fw-bold">เบอร์โทรศัพท์</h6>
+                                <p class="text-muted small mb-0">02-123-4567, 081-987-6543</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex mb-4">
+                            <i class="fas fa-envelope text-danger me-3 fs-4"></i>
+                            <div>
+                                <h6 class="fw-bold">อีเมล</h6>
+                                <p class="text-muted small mb-0">contact@btautoservice.com</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex mb-4">
+                            <i class="fas fa-clock text-danger me-3 fs-4"></i>
+                            <div>
+                                <h6 class="fw-bold">เวลาทำการ</h6>
+                                <p class="text-muted small mb-0">จันทร์ - เสาร์: 08:00 - 17:00 น.</p>
+                                <span class="badge bg-danger bg-opacity-10 text-danger mt-1">ปิดวันอาทิตย์</span>
+                            </div>
+                        </div>
+
+                        <!-- Mini Map Image Placeholder -->
+                        <div class="rounded overflow-hidden mt-3" style="height: 150px; background: #eee;">
+                            <img src="https://mt.google.com/vt/lyrs=m&x=13&y=7&z=4" class="w-100 h-100"
+                                style="object-fit: cover; opacity: 0.7;">
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="contact-form-card">
+                        <h4 class="fw-bold mb-4">ส่งข้อความถึงเรา</h4>
+                        <form>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold small">ชื่อ - นามสกุล *</label>
+                                    <input type="text" class="form-control" placeholder="ระบุชื่อของคุณ">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold small">เบอร์โทรศัพท์ *</label>
+                                    <input type="tel" class="form-control" placeholder="ตัวอย่าง: 081xxxxxxx">
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-bold small">อีเมล</label>
+                                    <input type="email" class="form-control" placeholder="name@example.com">
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-bold small">หัวข้อติดต่อ *</label>
+                                    <select class="form-select">
+                                        <option selected>เลือกหัวข้อ...</option>
+                                        <option value="1">สอบถามราคา</option>
+                                        <option value="2">นัดหมายเข้ารับบริการ</option>
+                                        <option value="3">แจ้งปัญหาการใช้งาน</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-bold small">รายละเอียด *</label>
+                                    <textarea class="form-control" rows="5"
+                                        placeholder="รายละเอียดอาการของรถ หรือข้อความที่ต้องการสอบถาม..."></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-submit">ส่งข้อความ</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-white fw-bold mb-3"><i class="fas fa-car-side me-2"></i>BT Auto Service</h5>
+                    <p class="small">อู่ซ่อมรถครบวงจร ดูแลรถคุณเหมือนรถของเราเอง ด้วยทีมช่างมืออาชีพและเครื่องมือทันสมัย
+                    </p>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h6 class="text-white fw-bold mb-3">เมนูลัด</h6>
+                    <a href="#" class="footer-link small">หน้าแรก</a>
+                    <a href="#services" class="footer-link small">บริการของเรา</a>
+                    <a href="#reviews" class="footer-link small">รีวิวจากลูกค้า</a>
+                    <a href="#contact" class="footer-link small">ร่วมงานกับเรา</a>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h6 class="text-white fw-bold mb-3">บริการ</h6>
+                    <a href="#" class="footer-link small">เช็คระยะช่วงล่าง</a>
+                    <a href="#" class="footer-link small">เปลี่ยนถ่ายน้ำมันเครื่อง</a>
+                    <a href="#" class="footer-link small">ซ่อมสีและตัวถัง</a>
+                    <a href="#" class="footer-link small">ตรวจสภาพรถ</a>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h6 class="text-white fw-bold mb-3">ติดตามข่าวสาร</h6>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-white fs-5"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-white fs-5"><i class="fab fa-line"></i></a>
+                        <a href="#" class="text-white fs-5"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-top border-secondary pt-3 mt-3 text-center small">
+                &copy; 2026 BT Auto Service. All rights reserved.
+            </div>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

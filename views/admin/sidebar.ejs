@@ -1,0 +1,31 @@
+<div class="sidebar">
+    <div class="sidebar-header text-center mb-4">
+        <h4 class="fw-bold text-success"><i class="fas fa-car-side"></i> BT Auto</h4>
+        <small class="text-muted">Management System</small>
+    </div>
+
+    <a href="/admin/dashboard" class="<%= page === 'dashboard' ? 'active' : '' %>">
+        <i class="fas fa-tachometer-alt me-3"></i> แดชบอร์ด (Dashboard)
+    </a>
+    <a href="/admin/finance" class="<%= page === 'finance' ? 'active' : '' %>">
+        <i class="fas fa-file-invoice-dollar me-3"></i> การเงิน (Finance)
+    </a>
+    <a href="/admin/cars" class="<%= page === 'cars' ? 'active' : '' %>">
+        <i class="fas fa-car me-3"></i> รถยนต์ (Cars)
+    </a>
+    <a href="/admin/customers" class="<%= page === 'customers' ? 'active' : '' %>">
+        <i class="fas fa-users me-3"></i> ลูกค้า (Customers)
+    </a>
+    <a href="/admin/repairs" class="<%= page === 'repairs' ? 'active' : '' %>">
+        <i class="fas fa-wrench me-3"></i> ใบสั่งซ่อม (Repairs)
+    </a>
+    <a href="/admin/inventory" class="<%= page === 'inventory' ? 'active' : '' %>">
+        <i class="fas fa-boxes me-3"></i> คลังสินค้า (Inventory)
+    </a>
+
+    <div class="mt-auto pt-4 border-top">
+        <a href="/logout" class="text-danger">
+            <i class="fas fa-sign-out-alt me-3"></i> ออกจากระบบ
+        </a>
+    </div>
+</div>

@@ -7,12 +7,8 @@ const path = require('path');
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
-<<<<<<< HEAD
-app.set('views', './views');
-=======
 app.use(express.static(path.join(__dirname, 'public')));
-app.set('views' , './views');
->>>>>>> 7e53f9b3c27a2f3343304002f65707ee16780f98
+app.set('views', './views');
 app.set('view engine', 'ejs')
 
 app.use(session({
@@ -51,13 +47,8 @@ app.post('/register', register)
 // ==============  LOGIN && LOGOUT =============== //
 const login = require('./module/auth/login')
 const logout = require('./module/auth/logout')
-<<<<<<< HEAD
 app.get('/login', (req, res) => {
-  res.render('login')
-=======
-app.get('/login',(req,res)=>{
-    res.render('login',{ error: null })
->>>>>>> 7e53f9b3c27a2f3343304002f65707ee16780f98
+  res.render('login', { error: null })
 })
 
 app.post('/login', login)
@@ -85,12 +76,29 @@ app.get('/my-cars', requireAuth, (req, res) => {
   res.render('my_cars', { user: req.session.user });
 });
 
+// ADMIN ROUTES
 app.get('/admin/dashboard', requireAuth, (req, res) => {
-  res.render('admin_dashboard', { user: req.session.user });
+  res.render('admin/dashboard', { user: req.session.user, page: 'dashboard' });
+});
+
+app.get('/admin/finance', requireAuth, (req, res) => {
+  res.render('admin/finance', { user: req.session.user, page: 'finance' });
+});
+
+app.get('/admin/cars', requireAuth, (req, res) => {
+  res.render('admin/cars', { user: req.session.user, page: 'cars' });
+});
+
+app.get('/admin/customers', requireAuth, (req, res) => {
+  res.render('admin/customers', { user: req.session.user, page: 'customers' });
 });
 
 app.get('/admin/repairs', requireAuth, (req, res) => {
-  res.render('manage_repairs', { user: req.session.user });
+  res.render('admin/repairs', { user: req.session.user, page: 'repairs' });
+});
+
+app.get('/admin/inventory', requireAuth, (req, res) => {
+  res.render('admin/inventory', { user: req.session.user, page: 'inventory' });
 });
 
 

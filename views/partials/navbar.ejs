@@ -1,0 +1,36 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/home"><i class="fas fa-wrench me-2"></i>BT Auto Service</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="/home">หน้าหลัก</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/my-cars">รถของฉัน</a>
+                </li>
+                <% if (user && user.roles && user.roles.includes('admin')) { %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">สำหรับเจ้าหน้าที่</a>
+                    </li>
+                    <% } %>
+                        <li class="nav-item">
+                            <form action="/logout" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-link nav-link"
+                                    style="text-decoration: none;">ออกจากระบบ</button>
+                            </form>
+                        </li>
+            </ul>
+            <% if (typeof user !=='undefined' && user) { %>
+                <span class="navbar-text ms-3 text-white">
+                    <i class="fas fa-user-circle me-1"></i>
+                    <%= user.firstName %>
+                </span>
+                <% } %>
+        </div>
+    </div>
+</nav>
