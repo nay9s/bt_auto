@@ -17,7 +17,7 @@
 
 .registerPage {
     width: 50%;
-    padding: 60px 150px;
+    padding: 60px 70px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -61,7 +61,7 @@ input {
     align-content: center;
     align-items: center;
     justify-content: flex-start;
-    margin: 10px 10px 10px 0px;
+    margin: 0px 10px 10px 0px;
 }
 
 #accept {
@@ -113,6 +113,10 @@ input {
     color: red;
 }
 
+.permission a {
+    color: #022c88;
+}
+
 .left {
     flex: 1;
     align-items: flex-start;
@@ -140,6 +144,11 @@ input {
     align-items: center;
 }
 
+#passwordNotice {
+    color: red;
+    margin: 10px 10px 0px 0px;
+}
+
 .logo {
     display: flex;
     align-items: center;
@@ -160,6 +169,17 @@ input {
     width: 50px;
     height: 50px;
     margin-right: 20px;
+}
+
+.haveaccount {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.haveaccount a {
+    color: #02881A;
 }
 
 @media (max-width: 1500px) {

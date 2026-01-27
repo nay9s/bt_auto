@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@100..700&display=swap');
-*{
+
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -16,7 +17,7 @@
 
 .loginPage {
     width: 50%;
-    padding: 60px 80px;
+    padding: 60px 70px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -29,7 +30,7 @@
     margin: 30px 0px 30px 0px;
 }
 
-.loginPage form input{
+.loginPage form input {
     padding: 13px;
     font-size: 16px;
     border-radius: 5px;
@@ -37,7 +38,7 @@
     border: 1px solid rgb(153, 153, 153);
 }
 
-.loginPage form button{
+.loginPage form button {
     padding: 10px;
     font-weight: bold;
     font-size: 14px;
@@ -48,7 +49,7 @@
 }
 
 .login p:last-child a {
-    color:#02881A;
+    color: #02881A;
 }
 
 #submit {
@@ -79,15 +80,15 @@
     font-size: 40px;
 }
 
-.rememberme span{
+.rememberme span {
     margin-left: 10px;
 }
 
-.other a{
+.other a {
     color: red;
 }
 
-.left{
+.left {
     flex: 1;
     align-items: flex-start;
     flex-direction: column;
@@ -95,35 +96,33 @@
     padding: 60px;
     color: white;
     justify-content: center;
-    background: linear-gradient(
-        45deg,
-        #02881A 0%,
-        #0a0a0a 40%,
-        #0a0a0a 60%,
-        #02881A 100%
-    );
+    background: linear-gradient(45deg,
+            #02881A 0%,
+            #0a0a0a 40%,
+            #0a0a0a 60%,
+            #02881A 100%);
 }
 
 
-.care-item{
+.care-item {
     display: flex;
     flex-direction: row;
     margin-top: 20px;
     align-items: center;
 }
 
-.logo{
+.logo {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.logo img{
+.logo img {
     width: 420px;
     margin: 30px 0px 30px 0px;
 }
 
-#errorMsg{
+#errorMsg {
     color: red;
     font-weight: bold;
 }
@@ -135,9 +134,10 @@
 }
 
 @media (max-width: 1000px) {
-    .logo img{
+    .logo img {
         width: 300px;
     }
+
     .content {
         flex-direction: column;
     }

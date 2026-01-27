@@ -43,7 +43,7 @@
             <div class="logo">
                 <img src="/img/login/logo.png" alt="">
             </div>
-            <form action="/register" method="post">
+            <form action="/register" method="post" autocomplete="off">
                 <div class="row">
                     <div class="column">
                         <p>ชื่อ</p>
@@ -79,16 +79,18 @@
                             required>
                     </div>
                 </div>
-                <p id="passwordNotice"></p>
+                <p id="passwordNotice">กรุณากรอกข้อมูลให้ครบ</p>
                 <div class="permission">
                     <input type="checkbox" name="accept" id="accept" required>
                     <p>ฉันยอมรับ<a href=""> ข้อกำหนดและเงื่อนไข </a>และ<a href=""> นโยบายความเป็นส่วนตัว </a></p>
                 </div>
                 <button type="submit" id="submit">สมัครสมาชิก</button>
             </form>
+            <div class="haveaccount">
+                <p>มีบัญชีแล้ว? <a href="/login">เข้าสู่ระบบ</a></p>
+            </div>
         </div>
     </div>
-
     <script src="/js/register.js"></script>
 </body>
 
