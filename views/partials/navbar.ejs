@@ -1,0 +1,39 @@
+<nav class="navbar">
+    <div class="container nav-flex">
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-car"></i>
+            </div>
+            <div class="brand-text">
+                <h1>อู่บีที ออโต้เซอร์วิส</h1>
+                <span>BT AUTO SERVICE</span>
+            </div>
+        </div>
+
+        <div class="menu">
+            <a href="/home" class="<%= path === '/home' ? 'active' : '' %>"><i class="fa-solid fa-house"></i>
+                <span>หน้าหลัก</span></a>
+            <a href="/car-status" class="<%= path === '/car-status' ? 'active' : '' %>"><i class="fa-solid fa-car"></i>
+                <span>สถานะรถ</span></a>
+            <a href="/history" class="<%= path === '/history' ? 'active' : '' %>"><i
+                    class="fa-solid fa-clock-rotate-left"></i> <span>ประวัติบริการ</span></a>
+            <a href="/contact" class="<%= path === '/contact' ? 'active' : '' %>"><i class="fa-solid fa-phone"></i>
+                <span>ติดต่ออู่</span></a>
+        </div>
+
+        <div class="user-profile">
+            <div class="user-info">
+                <div class="user-name">
+                    <%= typeof user !=='undefined' && user ? (user.firstName + ' ' + user.lastName) : 'User' %>
+                </div>
+                <div class="user-role">
+                    <%= typeof user !=='undefined' && user ? (user.roles[0]) : 'User' %>
+                </div>
+            </div>
+            <div class="avatar">
+                <img src="https://ui-avatars.com/api/?name=<%= typeof user !== 'undefined' && user ? user.firstName : 'User' %>&background=0D8ABC&color=fff"
+                    alt="Profile">
+            </div>
+        </div>
+    </div>
+</nav>

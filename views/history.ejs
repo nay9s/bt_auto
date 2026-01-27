@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="th">
+<%- include('partials/header', { pageTitle: 'ประวัติการซ่อม' }) %>
+
+    <body>
+        <%- include('partials/navbar', { path: '/history' , user: user }) %>
+
+            <div class="container main-wrapper d-block mt-40">
+                <div class="section-header mb-30">
+                    <h2><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการเข้ารับบริการ</h2>
+                    <p>ประวัติการซ่อมบำรุงรถยนต์ทุกคันของคุณ</p>
+                </div>
+
+                <div class="car-card mb-20">
+                    <div class="history-header-flex">
+                        <div class="history-icon-box history-icon-box-blue">
+                            <i class="fa-solid fa-wrench history-icon-size"></i>
+                        </div>
+                        <div>
+                            <h4 class="history-title">เปลี่ยนถ่ายน้ำมันเครื่อง + ไส้กรอง</h4>
+                            <span class="text-gray-600 text-sm">Toyota Camry (1กท 1234)</span>
+                        </div>
+                        <div class="cost-section">
+                            <div class="cost-amount">3,500 บาท</div>
+                            <span class="text-gray-600 text-sm">20 มิ.ย. 2568</span>
+                        </div>
+                    </div>
+
+                    <div class="repair-details-box">
+                        <h5 class="repair-list-title">รายการซ่อม</h5>
+                        <ul class="repair-list-ul">
+                            <li>น้ำมันเครื่องสังเคราะห์แท้ 4 ลิตร</li>
+                            <li>ไส้กรองน้ำมันเครื่อง</li>
+                            <li>แหวนรองน็อตถ่าย</li>
+                            <li>ค่าแรงช่าง</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="car-card mb-20">
+                    <div class="history-header-flex">
+                        <div class="history-icon-box history-icon-box-yellow">
+                            <i class="fa-solid fa-triangle-exclamation history-icon-size"></i>
+                        </div>
+                        <div>
+                            <h4 class="history-title">ปะยาง / สลับยาง</h4>
+                            <span class="text-gray-600 text-sm">Mazda 3 (5กท 9999)</span>
+                        </div>
+                        <div class="cost-section">
+                            <div class="cost-amount">450 บาท</div>
+                            <span class="text-gray-600 text-sm">15 ส.ค. 2568</span>
+                        </div>
+                    </div>
+
+                    <div class="repair-details-box">
+                        <h5 class="repair-list-title">รายการซ่อม</h5>
+                        <ul class="repair-list-ul">
+                            <li>ปะยางแบบสตรีมเย็น (ล้อหลังขวา)</li>
+                            <li>สลับยาง 4 ล้อ</li>
+                            <li>ถ่วงล้อ</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- More history entries can be added here -->
+            </div>
+
+            <%- include('partials/footer') %>
+    </body>
+
+</html>

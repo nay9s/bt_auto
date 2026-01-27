@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบอู่ซ่อมรถ</title>
+    <link rel="stylesheet" href="/css/register.css">
+</head>
+
+<body>
+    <div class="content">
+        <div class="left">
+            <h1 id="promote">Professional</h1>
+            <h1 style="color:#09FF42" id="promote">Car care</h1>
+            <p id="txt">บริการมาตรฐาน ดูแลรถของคุณด้วยทีมช่างมืออาชีพ ทั้งเครื่องยนต์ช่วงล่าง
+                และการเปลี่ยนถ่ายน้ำมันเครื่อง</p>
+            <div class="care">
+                <div class="care-item">
+                    <img src="/img/login/1.png" id="icon" alt="">
+                    <div class="text">
+                        <h1>ช่างผู้ชำนาญการ</h1>
+                        <p id="txt">ทีมงานมืออาชีพที่มีประสบการณ์สูง ดูแลรถคุณเหมือนรถเราเอง</p>
+                    </div>
+                </div>
+                <div class="care-item">
+                    <img src="/img/login/2.png" id="icon" alt="">
+                    <div class="text">
+                        <h1>อะไหล่แท้คุณภาพ</h1>
+                        <p id="txt">มั่นใจได้ในคุณภาพอะไหล่ทุกชิ้น รับประกันความพึงพอใจ</p>
+                    </div>
+                </div>
+                <div class="care-item">
+                    <img src="/img/login/3.png" id="icon" alt="">
+                    <div class="text">
+                        <h1>ราคายุติธรรม</h1>
+                        <p id="txt">ค่าบริการที่โปร่งใส ตรวจสอบได้ทุกขั้นตอน ไม่มีบวกเพิ่ม</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="registerPage">
+            <div class="logo">
+                <img src="/img/login/logo.png" alt="">
+            </div>
+            <form action="/register" method="post">
+                <div class="row">
+                    <div class="column">
+                        <p>ชื่อ</p>
+                        <input type="text" name="firstname" placeholder="ชื่อ" required>
+                    </div>
+                    <div class="column">
+                        <p>นามสกุล</p>
+                        <input type="text" name="lastname" placeholder="นามสกุล" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="column">
+                        <p>เบอร์โทรศัพท์</p>
+                        <input type="number" name="phone" placeholder="เบอร์โทรศัพท์" required>
+                    </div>
+                    <div class="column">
+                        <p>อีเมล</p>
+                        <input type="email" name="email" placeholder="อีเมล" required>
+                    </div>
+                </div>
+                <div class="line"></div>
+                <p>ชื่อผู้ใช้</p>
+                <input type="text" name="username" placeholder="ชื่อผู้ใช้" required>
+                <div class="row">
+                    <div class="column">
+                        <p>รหัสผ่าน</p>
+                        <input type="password" name="password" id="passwordField" placeholder="รหัสผ่าน" required>
+                    </div>
+
+                    <div class="column">
+                        <p>ยืนยันรหัสผ่าน</p>
+                        <input type="password" name="confirmPassword" id="confirmPassword" placeholder="ยืนยันรหัสผ่าน"
+                            required>
+                    </div>
+                </div>
+                <p id="passwordNotice"></p>
+                <div class="permission">
+                    <input type="checkbox" name="accept" id="accept" required>
+                    <p>ฉันยอมรับ<a href=""> ข้อกำหนดและเงื่อนไข </a>และ<a href=""> นโยบายความเป็นส่วนตัว </a></p>
+                </div>
+                <button type="submit" id="submit">สมัครสมาชิก</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/register.js"></script>
+</body>
+
+</html>

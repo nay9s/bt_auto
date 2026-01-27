@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="th">
+<%- include('partials/header', { pageTitle: 'Home' }) %>
+
+    <body>
+        <%- include('partials/navbar', { path: '/home' , user: user }) %>
+            <div class="greeting-section">
+                <div class="container greeting-flex">
+                    <div class="greeting-text">
+                        <h2>สวัสดี <%= typeof user !=='undefined' && user ? (user.firstName + ' ' + user.lastName)
+                                : 'User' %>! 👋</h2>
+                        <p>ติดตามสถานะการซ่อมและจัดการข้อมูลของคุณที่นี่</p>
+                    </div>
+                </div>
+            </div>
+            <div class="container main-wrapper">
+                <div class="status-section">
+                    <h3 class="section-title">
+                        <i class="fa-solid fa-gears icon-gear"></i> สถานะรถยนต์ของคุณ
+                    </h3>
+                    <div class="car-card">
+                        <div class="car-header">
+                            <a href="/car-details" class="view-all-link">ดูรายละเอียดทั้งหมด <i
+                                    class="fa-solid fa-arrow-right"></i></a>
+                            <div class="car-info">
+                                <div class="car-img">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/2018_Toyota_Camry_%28ASV70R%29_Ascent_sedan_%282018-08-27%29_01.jpg/640px-2018_Toyota_Camry_%28ASV70R%29_Ascent_sedan_%282018-08-27%29_01.jpg"
+                                        alt="Toyota Camry">
+                                </div>
+                                <div class="car-details">
+                                    <h3>Toyota Camry</h3>
+                                    <div class="plate-num">ทะเบียน 1กท 1234 ปี 2018</div>
+
+                                    <div class="date-info">
+                                        <div class="date-item">
+                                            <label>วันรับรถ</label>
+                                            <span>10 ต.ค. 2568</span>
+                                        </div>
+                                        <div class="date-item">
+                                            <label>วันรับรถ</label>
+                                            <span>10 ต.ค. 2568</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="status-timeline">
+                            <div class="status-step">
+                                <div class="step-icon active"><i class="fa-solid fa-check"></i></div>
+                                <div class="step-text active">รับรถแล้ว</div>
+                            </div>
+
+                            <div class="status-step">
+                                <div class="step-icon active"><i class="fa-solid fa-check"></i></div>
+                                <div class="step-text active">เช็คสภาพ</div>
+                            </div>
+
+                            <div class="status-step">
+                                <div class="step-icon active"><i class="fa-solid fa-check"></i></div>
+                                <div class="step-text active">รออะไหล่</div>
+                            </div>
+
+                            <div class="status-step">
+                                <div class="step-icon current"><i class="fa-solid fa-wrench"></i></div>
+                                <div class="step-text active text-danger">กำลังซ่อม</div>
+                            </div>
+
+                            <div class="status-step">
+                                <div class="step-icon"><i class="fa-solid fa-car-side"></i></div>
+                                <div class="step-text">ซ่อมแล้ว</div>
+                            </div>
+
+                            <div class="status-step">
+                                <div class="step-icon"><i class="fa-solid fa-key"></i></div>
+                                <div class="step-text">พร้อมส่งมอบ</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="car-card">
+                        <div class="car-info">
+                            <div class="car-img">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/2016_Honda_Jazz_%28GK5_MY16%29_VTi_hatchback_%282018-09-17%29_01.jpg/2560px-2016_Honda_Jazz_%28GK5_MY16%29_VTi_hatchback_%282018-09-17%29_01.jpg"
+                                    alt="Honda Jazz">
+                            </div>
+                            <div class="car-details">
+                                <h3>Honda jazz</h3>
+                                <div class="plate-num">ทะเบียน 5กท 9999 กทม ปี 2015</div>
+
+                                <div class="ready-banner">
+                                    <div class="check-circle">
+                                        <i class="fa-solid fa-check"></i>
+                                    </div>
+                                    <div class="ready-text">
+                                        <strong>รถของคุณพร้อมแล้ว!</strong>
+                                        <span>กรุณาติดต่อรับรถภายในเวลาทำการ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="full-bar"></div>
+                        <div class="full-bar-text">เสร็จสมบูรณ์ 12 ต.ค.</div>
+
+                        <div class="text-right mt-15">
+                            <button class="btn btn-light-bordered">ใบเสร็จ</button>
+                            <button class="btn btn-green">นัดนับรถ</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="sidebar-card">
+                        <div class="sidebar-header">
+                            <i class="fa-regular fa-calendar-days text-gray"></i> นัดหมายของคุณ
+                        </div>
+                        <div class="appointment-item">
+                            <div class="date-box">
+                                <span class="month">พ.ย.</span>
+                                <span class="day">14</span>
+                            </div>
+                            <div class="appoint-details">
+                                <h4>เช็คระยะ 50,000 กม.</h4>
+                                <span class="car-model">Toyota Camry</span>
+                                <div class="time"><i class="fa-regular fa-clock"></i> 09:00 น.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-card">
+                        <div class="sidebar-header">
+                            <i class="fa-solid fa-clock-rotate-left text-gray"></i> ประวัติล่าสุด
+                            <a href="/history" class="view-all-sidebar">ดูทั้งหมด</a>
+                        </div>
+
+                        <div class="history-item">
+                            <div class="history-icon">
+                                <i class="fa-solid fa-dharmachakra"></i>
+                            </div>
+                            <div class="history-text">
+                                <h4>ปะยาง/สลับยาง</h4>
+                                <span>15 ส.ค. 2568</span>
+                            </div>
+                        </div>
+
+                        <div class="history-item">
+                            <div class="history-icon">
+                                <i class="fa-solid fa-oil-can"></i>
+                            </div>
+                            <div class="history-text">
+                                <h4>เปลี่ยนถ่ายน้ำมันเครื่อง</h4>
+                                <span>20 มิ.ย. 2568</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-card contact-box">
+                        <div class="contact-header">
+                            มีข้อสงสัยเกี่ยวกับงานซ่อม?
+                        </div>
+                        <div class="contact-body">
+                            <a href="/contact" class="contact-btn">
+                                <i class="fa-solid fa-phone"></i> โทรหาช่างเทคนิค
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <%- include('partials/footer') %>
+    </body>
+
+</html>

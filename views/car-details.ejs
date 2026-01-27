@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="th">
+<%- include('partials/header', { pageTitle: 'รายละเอียดรถทั้งหมด' }) %>
+
+    <body>
+        <%- include('partials/navbar', { path: '/car-details' , user: user }) %>
+
+            <div class="container main-wrapper d-block mt-40">
+                <div class="section-header mb-30 flex-between-center">
+                    <div>
+                        <h2><i class="fa-solid fa-car"></i> รายละเอียดรถทั้งหมด</h2>
+                        <p>รถยนต์ทั้งหมดของคุณที่ลงทะเบียนไว้</p>
+                    </div>
+                </div>
+
+                <div class="grid-responsive">
+                    <div class="car-card">
+                        <div class="car-info">
+                            <div class="car-img">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/2018_Toyota_Camry_%28ASV70R%29_Ascent_sedan_%282018-08-27%29_01.jpg/640px-2018_Toyota_Camry_%28ASV70R%29_Ascent_sedan_%282018-08-27%29_01.jpg"
+                                    alt="Toyota Camry">
+                            </div>
+                            <div class="car-details">
+                                <h3>Toyota Camry</h3>
+                                <div class="plate-num">ทะเบียน 1กท 1234</div>
+                                <p class="text-gray-600 text-sm mt-5">ปี 2018 | สีดำ</p>
+
+                                <div class="mt-15 pt-15 border-top-gray">
+                                    <div class="flex-between-center mb-5">
+                                        <span class="text-gray-600">เลขตัวถัง:</span>
+                                        <span>MR052...882</span>
+                                    </div>
+                                    <div class="flex-between-center">
+                                        <span class="text-gray-600">ประกันภัย:</span>
+                                        <span class="text-success">หมดอายุ 20/05/2569</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-15 text-right">
+                            <a href="/history" class="btn btn-gray-light text-sm">ดูประวัติซ่อม</a>
+                        </div>
+                    </div>
+
+                    <div class="car-card">
+                        <div class="car-info">
+                            <div class="car-img">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/2016_Honda_Jazz_%28GK5_MY16%29_VTi_hatchback_%282018-09-17%29_01.jpg/2560px-2016_Honda_Jazz_%28GK5_MY16%29_VTi_hatchback_%282018-09-17%29_01.jpg"
+                                    alt="Honda Jazz">
+                            </div>
+                            <div class="car-details">
+                                <h3>Honda Jazz</h3>
+                                <div class="plate-num">ทะเบียน 5กท 9999</div>
+                                <p class="text-gray-600 text-sm mt-5">ปี 2015 | สีขาว</p>
+
+                                <div class="mt-15 pt-15 border-top-gray">
+                                    <div class="flex-between-center mb-5">
+                                        <span class="text-gray-600">เลขตัวถัง:</span>
+                                        <span>H442...992</span>
+                                    </div>
+                                    <div class="flex-between-center">
+                                        <span class="text-gray-600">ประกันภัย:</span>
+                                        <span class="text-danger">หมดอายุแล้ว</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-15 text-right">
+                            <a href="/history" class="btn btn-gray-light text-sm">ดูประวัติซ่อม</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <%- include('partials/footer') %>
+    </body>
+
+</html>

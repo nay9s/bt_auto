@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบอู่ซ่อมรถ</title>
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+
+<body>
+    <div class="content">
+        <div class="left">
+            <h1 id="promote">Professional</h1>
+            <h1 style="color:#09FF42" id="promote">Car care</h1>
+            <p id="txt">บริการมาตรฐาน ดูแลรถของคุณด้วยทีมช่างมืออาชีพ ทั้งเครื่องยนต์ช่วงล่าง
+                และการเปลี่ยนถ่ายน้ำมันเครื่อง</p>
+            <div class="care">
+                <div class="care-item">
+                    <img src="/img/login/1.png" id="icon" alt="">
+                    <div class="text">
+                        <h1>ช่างผู้ชำนาญการ</h1>
+                        <p id="txt">ทีมงานมืออาชีพที่มีประสบการณ์สูง ดูแลรถคุณเหมือนรถเราเอง</p>
+                    </div>
+                </div>
+                <div class="care-item">
+                    <img src="/img/login/2.png" id="icon" alt="">
+                    <div class="text">
+                        <h1>อะไหล่แท้คุณภาพ</h1>
+                        <p id="txt">มั่นใจได้ในคุณภาพอะไหล่ทุกชิ้น รับประกันความพึงพอใจ</p>
+                    </div>
+                </div>
+                <div class="care-item">
+                    <img src="/img/login/3.png" id="icon" alt="">
+                    <div class="text">
+                        <h1>ราคายุติธรรม</h1>
+                        <p id="txt">ค่าบริการที่โปร่งใส ตรวจสอบได้ทุกขั้นตอน ไม่มีบวกเพิ่ม</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="loginPage">
+            <div class="logo">
+                <img src="/img/login/logo.png" alt="">
+            </div>
+            <div class="login">
+                <h1>เข้าสู่ระบบ</h1>
+                <p>กรุณากรอกข้อมูลเพื่อเข้าสู่ระบบ</p>
+
+
+                <form action="/login" method="post" id="loginForm">
+                    <span>อีเมลหรือชื่อผู้ใช้</span>
+                    <input type="text" name="username" id="username" placeholder="กรอกอีเมล หรือชื่อผู้ใช้" required>
+                    <span>รหัสผ่าน</span>
+                    <input type="password" name="password" id="password" placeholder="********" required>
+                    <% if (error) { %>
+                        <p style="color:red">
+                            <%= error %>
+                        </p>
+                        <% } %>
+                            <div class="other">
+                                <div class="rememberme">
+                                    <input type="checkbox" name="rememberme" id="rememberme" value="1">
+                                    <span>จดจำฉัน</span>
+                                </div>
+                                <a href="">ลืมรหัสผ่าน?</a>
+                            </div>
+                            <button type="submit" id="submit">เข้าสู่ระบบ</button>
+                </form>
+
+                <p>ยังไม่มีชื่อผู้ใช้? <a href="/register">ลงทะเบียนใหม่</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/login.js"></script>
+</body>
+
+</html>
