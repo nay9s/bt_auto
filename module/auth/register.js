@@ -40,8 +40,8 @@ const passwordCheck = (password,confirmPassword) => {
 
 
 module.exports = async function register(req, res) {
-  const { username, password, confirmPassword , email, firstname, lastname} = req.body
-  if (!username || !password || !email || !firstname || !lastname || !confirmPassword) {
+  const { username, password, confirmPassword , email, firstname, lastname , phone} = req.body
+  if (!username || !password || !email || !firstname || !lastname || !confirmPassword || !phone) {
     return res.json({ success: false, error: 'กรุณากรอกข้อมูลให้ครบ' });
   }
 
@@ -67,8 +67,8 @@ module.exports = async function register(req, res) {
       }
 
       const [insertResult] = await sql.query(
-          'INSERT INTO users (username, password_hash, email, first_name, last_name) VALUES (?, ?, ?, ?, ?)',
-          [username, hashPassword, email, firstname, lastname]
+          'INSERT INTO users (username, password_hash, email, first_name, last_name , phone) VALUES (?, ?, ?, ?, ?, ?)',
+          [username, hashPassword, email, firstname, lastname , phone]
       )
       
       // console.log(insertResult);

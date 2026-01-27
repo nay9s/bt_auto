@@ -129,6 +129,10 @@ input{
     );
 }
 
+#passwordCheck {
+    color: red;
+}
+
 
 .care-item{
     display: flex;

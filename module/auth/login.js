@@ -20,7 +20,6 @@ module.exports = async function login(req,res) {
             });
         }
 
-        //u = username // ur = user_roles // r = roles
         const [roles] = await sql.query(
             `SELECT ur.role_id, r.name
             FROM user_roles ur

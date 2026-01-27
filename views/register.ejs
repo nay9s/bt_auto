@@ -54,7 +54,7 @@
                 <div class="row">
                     <div class="column">
                         <p>เบอร์โทรศัพท์</p>
-                        <input type="number" name="number" placeholder="เบอร์โทรศัพท์" required>
+                        <input type="number" name="phone" placeholder="เบอร์โทรศัพท์" required>
                     </div>
                     <div class="column">
                         <p>อีเมล</p>
@@ -67,22 +67,24 @@
                 <div class="row">
                     <div class="column">
                         <p>รหัสผ่าน</p>
-                        <input type="password" name="password" placeholder="รหัสผ่าน" required>
+                        <input type="password" name="password" id="passwordField" placeholder="รหัสผ่าน" required>
                     </div>
 
                     <div class="column">
                         <p>ยืนยันรหัสผ่าน</p>
-                        <input type="password" name="confirmPassword" placeholder="ยืนยันรหัสผ่าน" required>
+                        <input type="password" name="confirmPassword" id="confirmPassword" placeholder="ยืนยันรหัสผ่าน" required>
                     </div>
                 </div>
+                <p id="passwordNotice"></p>
                 <div class="permission">
                     <input type="checkbox" name="accept" id="accept" required>
                     <p>ฉันยอมรับ<a href=""> ข้อกำหนดและเงื่อนไข </a>และ<a href=""> นโยบายความเป็นส่วนตัว </a></p>
                 </div>
                 <button type="submit" id="submit">สมัครสมาชิก</button>
             </form>
-            
         </div>
     </div>
+
+    <script src="/js/register.js"></script>
 </body>
 </html>
