@@ -53,7 +53,7 @@
                     <input type="text" name="username" id="username" placeholder="กรอกอีเมล หรือชื่อผู้ใช้" required>
                     <span>รหัสผ่าน</span>
                     <input type="password" name="password" id="password" placeholder="********" required>
-                    <% if (error) { %>
+                    <% if (typeof error !=='undefined' && error) { %>
                         <p style="color:red">
                             <%= error %>
                         </p>
@@ -67,7 +67,6 @@
                             </div>
                             <button type="submit" id="submit">เข้าสู่ระบบ</button>
                 </form>
-
                 <p>ยังไม่มีชื่อผู้ใช้? <a href="/register">ลงทะเบียนใหม่</a></p>
             </div>
         </div>
