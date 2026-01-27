@@ -1,10 +1,10 @@
 ## Installation
-1. Make sure you have Docker and Docker Compose installed.
-2. Build and run the Docker containers
+1. ติดตั้ง Docker
+2. เปิดที่อยู่ของ Project ใน Command Line แล้ว Run
 ```docker-compose up -d```
 
 ## Configuration
-Create ".env" file and add key value to `<DATABASE_HOST>` `<DATABASE_USER>` `<DATABASE_PASSWORD>` `<NAME>` `<PORT>`
+สร้างไฟล์ ".env" และเพิ่มค่า `<DATABASE_HOST>` `<DATABASE_USER>` `<DATABASE_PASSWORD>` `<NAME>` `<PORT>`
 ```
 DB_HOST=<DATABASE_HOST>
 DB_USER=<DATABASE_USER>
@@ -14,4 +14,4 @@ DB_PORT=<PORT>
 ```
 
 ## Run
-Use ```docker compose up``` to run server
+ใช้ ```docker compose up``` เพื่อ Run Server
