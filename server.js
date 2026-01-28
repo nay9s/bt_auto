@@ -3,6 +3,7 @@ const app = express();
 const port = 3000;
 const session = require('express-session')
 const { requireAuth } = require('./module/auth/requireAuth')
+const { redirectIfAuth } = require('./module/auth/redirectIfAuth')
 const path = require('path');
 
 app.use(express.urlencoded({ extended: true }))
@@ -59,7 +60,7 @@ app.get('/contact', requireAuth, (req, res) => {
 
 // ==============  REGISTER  =============== //
 const register = require('./module/auth/register')
-app.get('/register', (req, res) => {
+app.get('/register', redirectIfAuth, (req, res) => {
   res.render('register', { error: null, msg: null })
 })
 
@@ -68,12 +69,12 @@ app.post('/register', register)
 // ==============  LOGIN && LOGOUT =============== //
 const login = require('./module/auth/login')
 const logout = require('./module/auth/logout')
-app.get('/login', (req, res) => {
+app.get('/login', redirectIfAuth, (req, res) => {
   res.render('login', { error: null })
 })
 
 app.post('/login', login)
-app.post('/logout', logout)
+app.get('/logout', logout)
 
 // ============== PORT =============== //
 app.listen(port, '0.0.0.0', () => {
