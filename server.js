@@ -32,7 +32,6 @@ app.get('/home', requireAuth, (req, res) => {
   res.render('home', { user: req.session.user, path: '/home' })
 })
 
-// ==============  ADD CAR  =============== //
 app.get('/add-car', requireAuth, (req, res) => {
   res.render('add-car', { user: req.session.user, path: '/add-car' })
 })
@@ -42,22 +41,18 @@ app.post('/add-car', requireAuth, (req, res) => {
   res.redirect('/home')
 })
 
-// ==============  CAR DETAILS  =============== //
 app.get('/car-details', requireAuth, (req, res) => {
   res.render('car-details', { user: req.session.user, path: '/car-details' })
 })
 
-// ==============  Job History  =============== //
 app.get('/history', requireAuth, (req, res) => {
   res.render('history', { user: req.session.user, path: '/history' })
 })
 
-// ==============  Car Status  =============== //
 app.get('/car-status', requireAuth, (req, res) => {
   res.render('car-status', { user: req.session.user, path: '/car-status' })
 })
 
-// ==============  Contact  =============== //
 app.get('/contact', requireAuth, (req, res) => {
   res.render('contact', { user: req.session.user, path: '/contact' })
 })
