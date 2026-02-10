@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="th">
+<%- include('partials/header', { pageTitle: 'รายละเอียดรถ' }) %>
+
+    <body>
+        <%- include('partials/navbar', { path: '/car-details' , user: user }) %>
+
+            <div class="container main-wrapper" style="display: block; max-width: 800px; margin: 0 auto;">
+                <div class="content-full">
+                    <div class="page-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 class="section-title" style="margin-bottom: 0;">
+                            <i class="fa-solid fa-circle-info icon-gear"></i> รายละเอียดการซ่อม
+                        </h3>
+                        <a href="/home" class="btn btn-secondary"
+                            style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">
+                            <i class="fa-solid fa-arrow-left"></i> กลับหน้าหลัก
+                        </a>
+                    </div>
+
+                    <% if (typeof order !=='undefined' && order) { %>
+                        <div class="car-card detail-card">
+                            <div class="car-header">
+                                <div class="car-info">
+                                    <div class="car-img">
+                                        <img src="<%= order.image_url || 'https://via.placeholder.com/150?text=No+Image' %>"
+                                            alt="car">
+                                    </div>
+                                    <div class="car-detail">
+                                        <h3>
+                                            <%= order.brand %>
+                                                <%= order.model %> (<%= order.year %>)
+                                        </h3>
+                                        <p>ทะเบียน: <%= order.license_plate %>
+                                        </p>
+                                        <div style="margin-top: 10px;">
+                                            <span class="status-badge status-<%= order.status %>">
+                                                <%= order.statusTh %>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="service-info"
+                                style="padding: 20px; background: #fff; border-top: 1px solid #eee;">
+                                <div class="detail-row" style="margin-bottom: 15px;">
+                                    <strong><i class="fa-solid fa-wrench"></i> ประเภทบริการ:</strong>
+                                    <span>
+                                        <%= order.service_type %>
+                                    </span>
+                                </div>
+                                <div class="detail-row" style="margin-bottom: 15px;">
+                                    <strong><i class="fa-solid fa-file-lines"></i> รายละเอียด:</strong>
+                                    <p style="margin-top: 5px; color: #555;">
+                                        <%= order.description || 'ไม่มีรายละเอียดเพิ่มเติม' %>
+                                    </p>
+                                </div>
+                                <div class="detail-row" style="margin-bottom: 15px;">
+                                    <strong><i class="fa-solid fa-calendar-days"></i> วันที่นัดหมาย:</strong>
+                                    <span>
+                                        <%= order.formattedDate %>
+                                    </span>
+                                </div>
+
+                                <hr style="border: 0; border-top: 1px dashed #ccc; margin: 20px 0;">
+
+                                <div class="cost-row"
+                                    style="display: flex; justify-content: space-between; align-items: center; font-size: 1.2em;">
+                                    <strong><i class="fa-solid fa-coins"></i> ค่าใช้จ่ายรวม:</strong>
+                                    <span style="color: #d9534f; font-weight: bold; font-size: 1.5em;">
+                                        <%= order.formattedCost %>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <% } else { %>
+                            <div class="alert alert-danger">
+                                ไม่พบข้อมูลงานซ่อม
+                            </div>
+                            <% } %>
+                </div>
+            </div>
+
+            <%- include('partials/footer') %>
+    </body>
+
+</html>

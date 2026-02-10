@@ -4,23 +4,34 @@ const bcrypt = require('bcrypt');
 module.exports = async function login(req, res) {
     const { username, password } = req.body
     try {
-        const [users] = await sql.query('SELECT id, username, email, first_name, last_name, password_hash FROM users WHERE username = ? or email = ?', [username, username])
-        if (users.length < 1) {
+        const [users] = await sql.query(
+            `SELECT id, username, email, first_name, last_name, password_hash
+            FROM users
+            WHERE username = ? OR email = ?`,
+            [username, username]
+        );
+
+
+        console.log(`Login attempt for: ${username}`);
+        const user = users[0]
+
+        if (!user) {
+            console.log('User not found in database');
             return res.render('login', {
                 error: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
             });
         }
 
-        const user = users[0]
-
+        console.log(`User found: ${user.username}, Hash: ${user.password_hash.substring(0, 10)}...`);
         const ValidPass = await bcrypt.compare(password, user.password_hash)
+        console.log(`Password match result: ${ValidPass}`);
         if (!ValidPass) {
             return res.render('login', {
                 error: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
             });
         }
 
-        //u = username // ur = user_roles // r = roles
+        u = username // ur = user_roles // r = roles
         const [roles] = await sql.query(
             `SELECT ur.role_id, r.name
             FROM user_roles ur

@@ -1,0 +1,93 @@
+<!-- Mobile Backdrop -->
+<div id="sidebarBackdrop" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden" onclick="toggleSidebar()">
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar"
+    class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-30 flex flex-col h-full font-kanit">
+
+    <!-- Brand -->
+    <div class="p-5 flex items-center gap-3 border-b border-gray-200">
+        <div class="w-10 h-10 border-2 border-primary rounded-lg flex items-center justify-center text-primary text-xl">
+            <i class="fa-solid fa-car"></i>
+        </div>
+        <div>
+            <h1 class="text-base font-bold text-primary leading-tight">อู๋บีที ออโต้เซอร์วิส</h1>
+            <span class="text-[10px] font-bold text-red-600 block">BT AUTO SERVICE</span>
+        </div>
+        <!-- Close Button (Mobile) -->
+        <button class="ml-auto lg:hidden text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
+            <i class="fa-solid fa-times text-xl"></i>
+        </button>
+    </div>
+
+    <!-- Menu -->
+    <ul class="flex-1 py-4 space-y-1 overflow-y-auto">
+        <li>
+            <a href="/admin/dashboard"
+                class="flex items-center gap-4 px-6 py-3 text-gray-600 hover:bg-green-50 hover:text-primary transition-colors border-r-4 border-transparent hover:border-primary <%= path === '/admin/dashboard' ? 'bg-green-50 text-primary border-primary' : '' %>">
+                <i class="fa-solid fa-chart-line w-5 text-center"></i>
+                <span>แดชบอร์ด</span>
+            </a>
+        </li>
+        <li>
+            <a href="/admin/finance"
+                class="flex items-center gap-4 px-6 py-3 text-gray-600 hover:bg-green-50 hover:text-primary transition-colors border-r-4 border-transparent hover:border-primary <%= path === '/admin/finance' ? 'bg-green-50 text-primary border-primary' : '' %>">
+                <i class="fa-solid fa-file-invoice-dollar w-5 text-center"></i>
+                <span>การเงิน</span>
+            </a>
+        </li>
+        <li>
+            <a href="/admin/cars"
+                class="flex items-center gap-4 px-6 py-3 text-gray-600 hover:bg-green-50 hover:text-primary transition-colors border-r-4 border-transparent hover:border-primary <%= path === '/admin/cars' ? 'bg-green-50 text-primary border-primary' : '' %>">
+                <i class="fa-solid fa-car-side w-5 text-center"></i>
+                <span>รถยนต์</span>
+            </a>
+        </li>
+        <li>
+            <a href="/admin/customers"
+                class="flex items-center gap-4 px-6 py-3 text-gray-600 hover:bg-green-50 hover:text-primary transition-colors border-r-4 border-transparent hover:border-primary <%= path === '/admin/customers' ? 'bg-green-50 text-primary border-primary' : '' %>">
+                <i class="fa-solid fa-users w-5 text-center"></i>
+                <span>ลูกค้า</span>
+            </a>
+        </li>
+        <li>
+            <a href="/admin/work-orders"
+                class="flex items-center gap-4 px-6 py-3 text-gray-600 hover:bg-green-50 hover:text-primary transition-colors border-r-4 border-transparent hover:border-primary <%= path === '/admin/work-orders' ? 'bg-green-50 text-primary border-primary' : '' %>">
+                <i class="fa-solid fa-clipboard-list w-5 text-center"></i>
+                <span>ใบสั่งซ่อม</span>
+            </a>
+        </li>
+        <li>
+            <a href="/admin/inventory"
+                class="flex items-center gap-4 px-6 py-3 text-gray-600 hover:bg-green-50 hover:text-primary transition-colors border-r-4 border-transparent hover:border-primary <%= path === '/admin/inventory' ? 'bg-green-50 text-primary border-primary' : '' %>">
+                <i class="fa-solid fa-boxes-stacked w-5 text-center"></i>
+                <span>คลังสินค้า</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- Footer -->
+    <div class="p-5 border-t border-gray-200">
+        <a href="/limit-settings" class="flex items-center gap-3 text-gray-500 hover:text-primary transition-colors">
+            <i class="fa-solid fa-gear"></i>
+            <span>ตั้งค่า</span>
+        </a>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        const isClosed = sidebar.classList.contains('-translate-x-full');
+
+        if (isClosed) {
+            sidebar.classList.remove('-translate-x-full');
+            backdrop.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            backdrop.classList.add('hidden');
+        }
+    }
+</script>

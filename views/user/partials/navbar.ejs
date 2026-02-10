@@ -5,8 +5,11 @@
                 <i class="fa-solid fa-car"></i>
             </div>
             <div class="brand-text">
-                <h1>อู่บีที ออโต้เซอร์วิส</h1>
-                <span>BT AUTO SERVICE</span>
+                <a href="/home">
+                    <h1>อู่บีที ออโต้เซอร์วิส</h1>
+                    <span>BT AUTO SERVICE</span>
+                </a>
+                
             </div>
         </div>
 
@@ -15,10 +18,14 @@
                 <span>หน้าหลัก</span></a>
             <a href="/car-status" class="<%= path === '/car-status' ? 'active' : '' %>"><i class="fa-solid fa-car"></i>
                 <span>สถานะรถ</span></a>
-            <a href="/history" class="<%= path === '/history' ? 'active' : '' %>"><i
+            <a href="/history" class="<%= path === '/history' ? 'active' : '' %> "><i
                     class="fa-solid fa-clock-rotate-left"></i> <span>ประวัติบริการ</span></a>
             <a href="/contact" class="<%= path === '/contact' ? 'active' : '' %>"><i class="fa-solid fa-phone"></i>
                 <span>ติดต่ออู่</span></a>
+            <% if (typeof user !== 'undefined' && user && user.roles === "Admin"){ %>
+                <a href="/admin" class="<%= path === '/admin' ? 'active' : '' %>"><i class="fa-solid fa-pen-to-square"></i>
+                <span>จัดการอู่</span></a>
+            <% } %>
         </div>
 
         <div class="user-profile">
@@ -27,12 +34,15 @@
                     <%= typeof user !=='undefined' && user ? (user.firstName + ' ' + user.lastName) : 'User' %>
                 </div>
                 <div class="user-role">
-                    <%= typeof user !=='undefined' && user ? (user.roles[0]) : 'User' %>
+                    <%= typeof user !=='undefined' && user ? (user.roles) : 'User' %>
                 </div>
             </div>
             <div class="avatar">
                 <img src="https://ui-avatars.com/api/?name=<%= typeof user !== 'undefined' && user ? user.firstName : 'User' %>&background=0D8ABC&color=fff"
                     alt="Profile">
+            </div>
+            <div class="logout">
+                <a href="/logout"><i class="fa-solid fa-right-from-bracket"></i></a>
             </div>
         </div>
     </div>

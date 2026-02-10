@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="th">
+<%- include('partials/header', { pageTitle: 'Home' }) %>
+
+    <body>
+        <%- include('partials/navbar', { path: '/home' , user: user }) %>
+
+            <div class="greeting-section">
+                <div class="container greeting-flex">
+                    <div class="greeting-text">
+                        <h2>สวัสดี <%= typeof user !=='undefined' && user ? (user.firstName + ' ' + user.lastName)
+                                : 'User' %>! 👋</h2>
+                        <p>ติดตามสถานะการซ่อมและจัดการข้อมูลของคุณที่นี่</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container main-wrapper">
+                <div class="content-main">
+                    <h3 class="section-title">
+                        <i class="fa-solid fa-gears icon-gear"></i> สถานะรถยนต์ของคุณ
+                    </h3>
+
+                    <% if (typeof workOrders !=='undefined' && workOrders.length> 0) { %>
+                        <% workOrders.forEach(order=> { %>
+                            <div class="car-card">
+                                <div class="car-header">
+                                    <a href="/car-details?id=<%= order.work_order_id %>" class="view-all-link">
+                                        ดูรายละเอียดทั้งหมด <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                    <div class="car-info">
+                                        <div class="car-img">
+                                            <img src="<%= order.image_url || 'https://via.placeholder.com/150?text=No+Image' %>"
+                                                alt="car">
+                                        </div>
+                                        <div class="car-detail">
+                                            <h3>
+                                                <%= order.brand %>
+                                                    <%= order.model %> (<%= order.year %>)
+                                            </h3>
+                                            <p>ทะเบียน: <%= order.license_plate %>
+                                            </p>
+                                            <span class="status-badge status-<%= order.status %>">
+                                                <%= order.statusTh %>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="service-info"
+                                    style="padding: 15px; background: #f9f9f9; border-radius: 8px; margin-top: 10px;">
+                                    <p><strong>ประเภทบริการ:</strong>
+                                        <%= order.service_type %>
+                                    </p>
+                                    <p><strong>รายละเอียด:</strong>
+                                        <%= order.description || 'ไม่มีรายละเอียด' %>
+                                    </p>
+                                    <p><strong>วันที่นัดหมาย:</strong>
+                                        <%= order.formattedDate %>
+                                    </p>
+                                </div>
+                            </div>
+                            <% }); %>
+                                <% } else { %>
+                                    <div class="car-card" style="text-align: center; padding: 40px;">
+                                        <p>ไม่พบข้อมูลรถยนต์หรืองานซ่อมของคุณในขณะนี้</p>
+                                    </div>
+                                    <% } %>
+                </div>
+
+                <div class="content-sidebar">
+                    <div class="sidebar-card">
+                        <div class="sidebar-header">
+                            <h4>ประวัติล่าสุด</h4>
+                        </div>
+                        <% if (typeof history !=='undefined' && history.length> 0) { %>
+                            <% history.forEach(item=> { %>
+                                <div class="history-item">
+                                    <div class="history-icon"><i class="fa-solid fa-wrench"></i></div>
+                                    <div class="history-text">
+                                        <h4>
+                                            <%= item.service_type %>
+                                        </h4>
+                                        <span>
+                                            <%= new Date(item.service_date).toLocaleDateString('th-TH') %>
+                                        </span>
+                                    </div>
+                                </div>
+                                <% }); %>
+                                    <% } else { %>
+                                        <div class="history-item">
+                                            <div class="history-text">
+                                                <span>ไม่พบประวัติการซ่อม</span>
+                                            </div>
+                                        </div>
+                                        <% } %>
+                    </div>
+
+                    <div class="sidebar-card contact-box">
+                        <div class="contact-header">มีข้อสงสัยเกี่ยวกับงานซ่อม?</div>
+                        <div class="contact-body">
+                            <a href="tel:0903191357" class="contact-btn">
+                                <i class="fa-solid fa-phone"></i> โทรหาช่างเทคนิค
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <%- include('partials/footer') %>
+    </body>
+
+</html>

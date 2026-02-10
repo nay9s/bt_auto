@@ -71,14 +71,15 @@ module.exports = async function register(req, res) {
       [username, hashPassword, email, firstname, lastname, phone]
     )
 
-    // console.log(insertResult);
+    console.log(insertResult);
     const userID = insertResult.insertId
 
     await sql.query(
-      "INSERT INTO user_roles (user_id, role_id) SELECT ?, id FROM roles WHERE name = 'ผู้ใช้'",
+      "INSERT INTO user_roles (user_id, role_id) SELECT ?, id FROM roles WHERE name = 'user'",
       [userID]
     )
-    return res.json({ success: true, msg: 'สมัครสมาชิกสำเร็จ!' });
+    return res.redirect('/login');
+    // return res.json({ success: true, msg: 'สมัครสมาชิกสำเร็จ!' });
 
   } catch (err) {
     console.error(err)
