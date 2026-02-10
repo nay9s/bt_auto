@@ -11,99 +11,119 @@
                     <p>ติดตามความคืบหน้างานซ่อมของคุณแบบ Real-time</p>
                 </div>
 
-                <div class="car-card border-left-red">
-                    <div class="car-header flex-column-gap-15">
-                        <div class="status-badge status-badge-processing align-self-start">
-                            กำลังดำเนินการ
-                        </div>
-                        <div class="car-info mt-0 flex-column-full">
-                            <div class="car-img car-img-full">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/2018_Toyota_Camry_%28ASV70R%29_Ascent_sedan_%282018-08-27%29_01.jpg/640px-2018_Toyota_Camry_%28ASV70R%29_Ascent_sedan_%282018-08-27%29_01.jpg"
-                                    alt="Toyota Camry" class="img-cover">
-                            </div>
-                            <div class="car-details">
-                                <h3>Toyota Camry</h3>
-                                <div class="plate-num">ทะเบียน 1กท 1234</div>
-                                <div class="mt-10">
-                                    <span class="text-gray-600 text-sm"><i class="fa-regular fa-clock"></i>
-                                        รับรถเมื่อ: 10 ต.ค. 2568</span>
+                <% if (typeof orders !=='undefined' && orders.length> 0) { %>
+                    <% orders.forEach(order=> {
+                        // Determine border color based on status
+                        let borderClass = 'border-left-red';
+                        let badgeClass = 'status-badge-processing';
+                        let badgeText = 'กำลังดำเนินการ';
+
+                        if (order.status === 'completed') {
+                        borderClass = 'border-left-green opacity-80';
+                        badgeClass = 'status-badge-completed';
+                        badgeText = 'เสร็จสิ้น';
+                        } else if (order.status === 'ready_for_pickup') {
+                        borderClass = 'border-left-green';
+                        badgeClass = 'status-badge-completed'; // Or custom
+                        badgeText = 'พร้อมส่งมอบ';
+                        }
+
+                        // Steps Definition
+                        const steps = [
+                        { label: 'รับรถแล้ว', icon: 'fa-check' },
+                        { label: 'เช็คสภาพ', icon: 'fa-check' }, // or fa-stethoscope
+                        { label: 'รออะไหล่', icon: 'fa-check' }, // or fa-box
+                        { label: 'กำลังซ่อม', icon: 'fa-wrench' },
+                        { label: 'ซ่อมแล้ว', icon: 'fa-car-side' },
+                        { label: 'พร้อมส่งมอบ', icon: 'fa-key' }
+                        ];
+                        %>
+
+                        <div class="car-card <%= borderClass %> mb-40">
+                            <div class="car-header flex-column-gap-15">
+                                <div class="status-badge <%= badgeClass %> align-self-start">
+                                    <%= badgeText %>
+                                </div>
+                                <div class="car-info mt-0 flex-column-full">
+                                    <div class="car-img car-img-full">
+                                        <img src="<%= order.image_url || 'https://via.placeholder.com/300?text=No+Image' %>"
+                                            alt="<%= order.brand %> <%= order.model %>" class="img-cover">
+                                    </div>
+                                    <div class="car-details">
+                                        <h3>
+                                            <%= order.brand %>
+                                                <%= order.model %>
+                                        </h3>
+                                        <div class="plate-num">ทะเบียน <%= order.license_plate %>
+                                        </div>
+                                        <div class="mt-10">
+                                            <span class="text-gray-600 text-sm"><i class="fa-regular fa-clock"></i>
+                                                รับรถเมื่อ: <%= order.formattedDate %></span>
+                                        </div>
+                                        <% if (order.end_date) { %>
+                                            <div class="mt-5">
+                                                <span class="text-gray-600 text-sm"><i
+                                                        class="fa-regular fa-calendar-check"></i>
+                                                    เสร็จเมื่อ: <%= order.formattedEndDate %></span>
+                                            </div>
+                                            <% } %>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="status-timeline">
-                        <div class="status-step">
-                            <div class="step-icon active"><i class="fa-solid fa-check"></i></div>
-                            <div class="step-text active">รับรถแล้ว</div>
-                        </div>
+                            <% if (order.status !=='completed' && order.status !=='canceled' ) { %>
+                                <div class="status-timeline">
+                                    <% steps.forEach((step, index)=> {
+                                        // Logic for active state
+                                        // order.activeStepIndex comes from server:
+                                        // pending=0, checking=1, waiting_parts=2, repairing=3, ready=5, completed=6
 
-                        <div class="status-step">
-                            <div class="step-icon active"><i class="fa-solid fa-check"></i></div>
-                            <div class="step-text active">เช็คสภาพ</div>
-                        </div>
+                                        let stepClass = '';
+                                        let iconClass = '';
 
-                        <div class="status-step">
-                            <div class="step-icon active"><i class="fa-solid fa-check"></i></div>
-                            <div class="step-text active">รออะไหล่</div>
-                        </div>
-
-                        <div class="status-step">
-                            <div class="step-icon current"><i class="fa-solid fa-wrench"></i></div>
-                            <div class="step-text active text-danger">กำลังซ่อม</div>
-
-                        </div>
-
-                        <div class="status-step">
-                            <div class="step-icon"><i class="fa-solid fa-car-side"></i></div>
-                            <div class="step-text">ซ่อมแล้ว</div>
-                        </div>
-
-                        <div class="status-step">
-                            <div class="step-icon"><i class="fa-solid fa-key"></i></div>
-                            <div class="step-text">พร้อมส่งมอบ</div>
-                        </div>
-                    </div>
-
-                    <div class="mt-20 pt-15 border-top-gray">
-                        <h4>หมายเหตุจากช่าง:</h4>
-                        <p class="text-gray-600">กำลังดำเนินการเปลี่ยนผ้าเบรกคู่หน้า และเจียรจานเบรก
-                            คาดว่าจะเสร็จตามกำหนดเวลาครับ</p>
-                    </div>
-                </div>
-
-                <div class="car-card border-left-green opacity-80">
-                    <div class="car-header flex-column-gap-15">
-                        <div class="status-badge status-badge-completed whitespace-nowrap align-self-start">
-                            เสร็จสิ้น
-                        </div>
-                        <div class="car-info mt-0 flex-column-full">
-                            <div class="car-img car-img-full">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/2016_Honda_Jazz_%28GK5_MY16%29_VTi_hatchback_%282018-09-17%29_01.jpg/2560px-2016_Honda_Jazz_%28GK5_MY16%29_VTi_hatchback_%282018-09-17%29_01.jpg"
-                                    alt="Honda Jazz" class="img-cover">
-                            </div>
-                            <div class="car-details">
-                                <h3>Honda Jazz</h3>
-                                <div class="plate-num">ทะเบียน 5กท 9999</div>
-                                <div class="mt-10">
-                                    <span class="text-gray-600 text-sm"><i class="fa-regular fa-calendar-check"></i>
-                                        เสร็จเมื่อ: 12 ต.ค. 2568</span>
+                                        if (index <= order.activeStepIndex) { stepClass='active' ; iconClass='active' ;
+                                            } if (index===order.activeStepIndex) { stepClass +=' text-danger font-bold'
+                                            ; iconClass +=' current' ; } %>
+                                            <div class="status-step">
+                                                <div class="step-icon <%= iconClass %>">
+                                                    <i class="fa-solid <%= step.icon %>"></i>
+                                                </div>
+                                                <div class="step-text <%= stepClass %>">
+                                                    <%= step.label %>
+                                                </div>
+                                            </div>
+                                            <% }); %>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
+                                <% } %>
 
-                    <div class="ready-banner mb-0">
-                        <div class="check-circle">
-                            <i class="fa-solid fa-check"></i>
-                        </div>
-                        <div class="ready-text">
-                            <strong>รถของคุณพร้อมแล้ว!</strong>
-                            <span>กรุณาติดต่อรับรถภายในเวลาทำการ</span>
-                        </div>
-                    </div>
-                </div>
+                                    <% if (order.description) { %>
+                                        <div class="mt-20 pt-15 border-top-gray">
+                                            <h4>หมายเหตุจากช่าง:</h4>
+                                            <p class="text-gray-600">
+                                                <%= order.description %>
+                                            </p>
+                                        </div>
+                                        <% } %>
 
+                                            <% if (order.status==='ready_for_pickup' ) { %>
+                                                <div class="ready-banner mb-0">
+                                                    <div class="check-circle">
+                                                        <i class="fa-solid fa-check"></i>
+                                                    </div>
+                                                    <div class="ready-text">
+                                                        <strong>รถของคุณพร้อมแล้ว!</strong>
+                                                        <span>กรุณาติดต่อรับรถภายในเวลาทำการ</span>
+                                                    </div>
+                                                </div>
+                                                <% } %>
+                        </div>
+                        <% }); %>
+                            <% } else { %>
+                                <div class="car-card text-center py-5">
+                                    <p class="text-gray-500">ไม่พบรายการซ่อมในขณะนี้</p>
+                                    <a href="/home" class="btn btn-primary mt-3">กลับหน้าหลัก</a>
+                                </div>
+                                <% } %>
             </div>
 
             <%- include('partials/footer') %>

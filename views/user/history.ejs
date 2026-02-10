@@ -10,56 +10,68 @@
                     <h2><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการเข้ารับบริการ</h2>
                     <p>ประวัติการซ่อมบำรุงรถยนต์ทุกคันของคุณ</p>
                 </div>
-                <div class="car-card mb-20">
-                    <div class="history-header-flex">
-                        <div class="history-icon-box history-icon-box-blue">
-                            <i class="fa-solid fa-wrench history-icon-size"></i>
-                        </div>
-                        <div>
-                            <h4 class="history-title">เปลี่ยนถ่ายน้ำมันเครื่อง + ไส้กรอง</h4>
-                            <span class="text-gray-600 text-sm">Toyota Camry (1กท 1234)</span>
-                        </div>
-                        <div class="cost-section">
-                            <div class="cost-amount">3,500 บาท</div>
-                            <span class="text-gray-600 text-sm">20 มิ.ย. 2568</span>
-                        </div>
-                    </div>
+                <% if (history && history.length> 0) { %>
+                    <% history.forEach(item=> { %>
+                        <div class="car-card mb-20">
+                            <div class="history-header-flex">
+                                <div class="history-icon-box history-icon-box-blue">
+                                    <i class="fa-solid fa-wrench history-icon-size"></i>
+                                </div>
+                                <div>
+                                    <h4 class="history-title">
+                                        <%= item.service_type %>
+                                            <% let statusColor='secondary' ; let statusText=item.status;
+                                                switch(item.status) { case 'pending' : statusColor='warning' ;
+                                                statusText='รอดำเนินการ' ; break; case 'checking' : statusColor='info' ;
+                                                statusText='กำลังตรวจเช็ค' ; break; case 'waiting_parts' :
+                                                statusColor='warning' ; statusText='รออะไหล่' ; break; case 'repairing'
+                                                : statusColor='primary' ; statusText='กำลังซ่อมแซม' ; break;
+                                                case 'ready_for_pickup' : statusColor='success' ; statusText='รอรับรถ' ;
+                                                break; case 'completed' : statusColor='success' ; statusText='เสร็จสิ้น'
+                                                ; break; case 'canceled' : statusColor='danger' ; statusText='ยกเลิก' ;
+                                                break; } %>
+                                                <span class="badge bg-<%= statusColor %>"
+                                                    style="font-size: 0.8rem; vertical-align: middle; margin-left: 8px;">
+                                                    <%= statusText %>
+                                                </span>
+                                    </h4>
+                                    <span class="text-gray-600 text-sm">
+                                        <%= item.brand %>
+                                            <%= item.model %> (<%= item.license_plate %>)
+                                    </span>
+                                </div>
+                                <div class="cost-section">
+                                    <div class="cost-amount">
+                                        <%= item.formattedCost %> บาท
+                                    </div>
+                                    <span class="text-gray-600 text-sm">
+                                        <%= item.formattedDate %>
+                                    </span>
+                                </div>
+                            </div>
 
-                    <div class="repair-details-box">
-                        <h5 class="repair-list-title">รายการซ่อม</h5>
-                        <ul class="repair-list-ul">
-                            <li>น้ำมันเครื่องสังเคราะห์แท้ 4 ลิตร</li>
-                            <li>ไส้กรองน้ำมันเครื่อง</li>
-                            <li>แหวนรองน็อตถ่าย</li>
-                            <li>ค่าแรงช่าง</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="car-card mb-20">
-                    <div class="history-header-flex">
-                        <div class="history-icon-box history-icon-box-yellow">
-                            <i class="fa-solid fa-triangle-exclamation history-icon-size"></i>
+                            <div class="repair-details-box">
+                                <h5 class="repair-list-title">รายการซ่อม/อะไหล่</h5>
+                                <ul class="repair-list-ul">
+                                    <% if (item.items && item.items.length> 0) { %>
+                                        <% item.items.forEach(part=> { %>
+                                            <li>
+                                                <%= part.item_name %> (<%= part.quantity %>)
+                                            </li>
+                                            <% }); %>
+                                                <% } else { %>
+                                                    <li>- <%= item.description || 'ไม่มีรายละเอียดเพิ่มเติม' %>
+                                                    </li>
+                                                    <% } %>
+                                </ul>
+                            </div>
                         </div>
-                        <div>
-                            <h4 class="history-title">ปะยาง / สลับยาง</h4>
-                            <span class="text-gray-600 text-sm">Mazda 3 (5กท 9999)</span>
-                        </div>
-                        <div class="cost-section">
-                            <div class="cost-amount">450 บาท</div>
-                            <span class="text-gray-600 text-sm">15 ส.ค. 2568</span>
-                        </div>
-                    </div>
-
-                    <div class="repair-details-box">
-                        <h5 class="repair-list-title">รายการซ่อม</h5>
-                        <ul class="repair-list-ul">
-                            <li>ปะยางแบบสตรีมเย็น (ล้อหลังขวา)</li>
-                            <li>สลับยาง 4 ล้อ</li>
-                            <li>ถ่วงล้อ</li>
-                        </ul>
-                    </div>
-                </div>
+                        <% }); %>
+                            <% } else { %>
+                                <div class="alert alert-info text-center">
+                                    <p>ไม่พบประวัติการซ่อม</p>
+                                </div>
+                                <% } %>
             </div>
             <%- include('partials/footer') %>
     </body>

@@ -101,6 +101,130 @@ app.get('/home', requireAuth, async (req, res) => {
   }
 });
 
+app.get('/car-status', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    // Fetch all work orders for the user, ordered by date
+    // We want to show the *latest* status for each car, or just list all active repairs.
+    // Let's list all active repairs + recently completed ones.
+    const [orders] = await sql.query(`
+            SELECT 
+                wo.id AS work_order_id,
+                wo.service_type,
+                wo.description,
+                wo.status,
+                wo.appointment_date,
+                wo.created_at,
+                wo.updated_at,
+                wo.end_date,
+                c.brand,
+                c.model,
+                c.year,
+                c.license_plate,
+                c.image_url
+            FROM work_orders wo
+            JOIN cars c ON wo.car_id = c.id
+            WHERE c.user_id = ?
+            ORDER BY wo.updated_at DESC, wo.created_at DESC
+        `, [userId]);
+
+    const statusSteps = ['pending', 'checking', 'waiting_parts', 'repairing', 'repair_done', 'ready_for_pickup'];
+
+    const formattedOrders = orders.map(order => {
+      // Determine active step index
+      let activeStepIndex = 0;
+      switch (order.status) {
+        case 'pending': activeStepIndex = 0; break;
+        case 'checking': activeStepIndex = 1; break;
+        case 'waiting_parts': activeStepIndex = 2; break;
+        case 'repairing': activeStepIndex = 3; break;
+        // Case for 'repair_done' if we had it, but otherwise 'ready_for_pickup' maps to last
+        case 'ready_for_pickup': activeStepIndex = 5; break;
+        case 'completed': activeStepIndex = 6; break; // All done
+        default: activeStepIndex = 0;
+      }
+
+      return {
+        ...order,
+        activeStepIndex,
+        formattedDate: order.appointment_date ? new Date(order.appointment_date).toLocaleDateString('th-TH') : '-',
+        formattedEndDate: order.end_date ? new Date(order.end_date).toLocaleDateString('th-TH') : '-'
+      };
+    });
+
+    const userSession = req.session.user;
+    const userView = {
+      ...userSession,
+      firstName: userSession.first_name || userSession.firstName,
+      lastName: userSession.last_name || userSession.lastName,
+      roles: userSession.role || userSession.roles
+    };
+
+    res.render('user/car-status', {
+      user: userView,
+      path: '/car-status',
+      orders: formattedOrders
+    });
+
+  } catch (error) {
+    console.error('Error fetching car status:', error);
+    res.status(500).send('Server Error');
+  }
+});
+
+app.get('/car-details', requireAuth, async (req, res) => {
+  try {
+    const workOrderId = req.query.id;
+    if (!workOrderId) {
+      return res.redirect('/home');
+    }
+
+    const workOrder = await getWorkOrderById(workOrderId);
+
+    // Security Check: Ensure this work order belongs to one of the user's cars
+    // The workOrder object from getWorkOrderById includes user_id of the car owner
+    if (!workOrder || workOrder.user_id !== req.session.user.id) {
+      return res.status(403).send('Unauthorized or Not Found');
+    }
+
+    // Format data for view
+    const statusTranslation = {
+      'pending': 'รอดำเนินการ',
+      'checking': 'กำลังตรวจเช็ค',
+      'repairing': 'กำลังซ่อมแซม',
+      'waiting_parts': 'รออะไหล่',
+      'ready_for_pickup': 'รอรับรถ',
+      'completed': 'ซ่อมเสร็จสิ้น',
+      'canceled': 'ยกเลิก'
+    };
+
+    workOrder.statusTh = statusTranslation[workOrder.status] || workOrder.status;
+    workOrder.formattedDate = workOrder.appointment_date ? new Date(workOrder.appointment_date).toLocaleDateString('th-TH') : '-';
+    workOrder.formattedCost = workOrder.cost ? parseFloat(workOrder.cost).toLocaleString('th-TH', { minimumFractionDigits: 2 }) : '0.00';
+
+    // Format items if needed? They are already in workOrder.items
+
+    // Pass user data for navbar
+    const userSession = req.session.user;
+    const userView = {
+      ...userSession,
+      firstName: userSession.first_name || userSession.firstName,
+      lastName: userSession.last_name || userSession.lastName,
+      roles: userSession.role || userSession.roles
+    };
+
+    res.render('user/car-details', {
+      user: userView,
+      path: '/car-details',
+      order: workOrder
+    });
+
+  } catch (error) {
+    console.error('Error fetching car details:', error);
+    res.redirect('/home');
+  }
+});
+
 app.get('/add-car', requireAuth, (req, res) => {
   res.render('user/add-car', { user: req.session.user, path: '/add-car' })
 })
@@ -183,8 +307,61 @@ app.get('/car-details', requireAuth, async (req, res) => {
   }
 })
 
-app.get('/history', requireAuth, (req, res) => {
-  res.render('user/history', { user: req.session.user, path: '/history' })
+app.get('/history', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    // Fetch all completed work orders for the user
+    const [historyItems] = await sql.query(`
+        SELECT 
+            wo.id AS work_order_id,
+            wo.service_type,
+            wo.description,
+            wo.status,
+            wo.appointment_date,
+            wo.cost,
+            c.brand,
+            c.model,
+            c.license_plate,
+            c.year
+        FROM work_orders wo
+        JOIN cars c ON wo.car_id = c.id
+        WHERE c.user_id = ?
+        ORDER BY wo.appointment_date DESC, wo.created_at DESC
+    `, [userId]);
+
+    // Fetch items for each history entry (optional, but good for details)
+    // For now, we'll just show the main info. If we want details, we can do a loop or join.
+    // Let's attach items to each order for the detailed view in history.ejs
+    for (const item of historyItems) {
+      const [orderItems] = await sql.query(`
+            SELECT item_name, quantity, unit_price FROM work_order_items WHERE work_order_id = ?
+         `, [item.work_order_id]);
+      item.items = orderItems;
+    }
+
+    const formattedHistory = historyItems.map(item => ({
+      ...item,
+      formattedDate: item.appointment_date ? new Date(item.appointment_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : '-',
+      formattedCost: new Intl.NumberFormat('th-TH', { style: 'decimal', minimumFractionDigits: 0 }).format(item.cost || 0)
+    }));
+
+    const userSession = req.session.user;
+    const userView = {
+      ...userSession,
+      firstName: userSession.first_name || userSession.firstName,
+      lastName: userSession.last_name || userSession.lastName,
+      roles: userSession.role || userSession.roles
+    };
+
+    res.render('user/history', {
+      user: userView,
+      path: '/history',
+      history: formattedHistory
+    })
+  } catch (error) {
+    console.error('Error fetching history:', error);
+    res.status(500).send('Error fetching history');
+  }
 })
 
 app.get('/car-status', requireAuth, (req, res) => {
@@ -218,9 +395,45 @@ const { requireAdmin } = require('./module/auth/requireAdmin')
 const { getCustomers, addCustomer, exportCustomers, getCustomerById, editCustomer } = require('./module/admin/customerController')
 const { getCars, addCar, searchOwners, getCarById, editCar, exportCars } = require('./module/admin/carController')
 const { getInventory, addItem, updateItem, deleteItem } = require('./module/admin/inventoryController')
+const { getWorkOrders, getWorkOrderById, createWorkOrder, getUsersForDropdown, getCarsByUserId, updateWorkOrder, deleteWorkOrder } = require('./module/admin/workOrderController')
 const { runMigrations } = require('./module/migrations/migration')
 const multer = require('multer')
 const fs = require('fs')
+
+// Configure Multer
+// ... (omitted)
+
+// (Skipping to routes)
+
+// Update Work Order
+app.post('/admin/work-orders/update/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const items = JSON.parse(req.body.itemsJson || '[]');
+    const result = await updateWorkOrder(req.params.id, {
+      ...req.body,
+      items
+    });
+
+    if (result.success) {
+      res.redirect('/admin/work-orders');
+    } else {
+      res.status(500).send('Error updating work order: ' + result.error);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Delete Work Order
+app.get('/admin/work-orders/delete/:id', requireAuth, requireAdmin, async (req, res) => {
+  const result = await deleteWorkOrder(req.params.id);
+  if (result.success) {
+    res.redirect('/admin/work-orders');
+  } else {
+    res.redirect('/admin/work-orders?error=' + encodeURIComponent(result.error));
+  }
+});
 
 // Configure Multer
 // Configure Multer for Cars
@@ -445,6 +658,140 @@ app.post('/admin/inventory/add', requireAuth, requireAdmin, uploadInventory.sing
     res.redirect('/admin/inventory?error=' + encodeURIComponent(result.error));
   }
 })
+
+// --- WORK ORDERS --- //
+app.get('/admin/work-orders', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const search = req.query.search || '';
+    const status = req.query.status || '';
+
+    const data = await getWorkOrders(page, limit, search, status);
+    const users = await getUsersForDropdown();
+
+    // Get inventory items for the dropdown in modal
+    const inventoryData = await getInventory(1, 1000, '', ''); // Fetch all (limited to 1000)
+
+    const userSession = req.session.user;
+    const userView = {
+      ...userSession,
+      firstName: userSession.first_name || userSession.firstName,
+      lastName: userSession.last_name || userSession.lastName,
+      roles: userSession.role || userSession.roles
+    };
+
+    res.render('admin/work-orders', {
+      user: userView,
+      path: '/admin/work-orders',
+      workOrders: data.workOrders,
+      pagination: data.pagination,
+      users: users,
+      inventoryItems: inventoryData.items,
+      search,
+      status
+    });
+  } catch (error) {
+    console.error('Error fetching work orders:', error);
+    res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูลใบสั่งซ่อม');
+  }
+})
+
+app.post('/admin/work-orders/create', requireAuth, requireAdmin, async (req, res) => {
+  // Parse numeric values from form
+  const rawItems = req.body.items || [];
+  const items = Array.isArray(rawItems) ? rawItems : [rawItems]; // Handle single item case if needed, but normally it's JSON from frontend or array
+
+  // Note: Since we will likely use client-side JS to build the JSON object for items, 
+  // we might want to accept a JSON string for 'items' or handle traditional form array inputs.
+  // For this implementation, let's assume the frontend sends a structured JSON string in a hidden field 'itemsJson'
+  // OR we parse traditional form data. Let's start with a simpler approach: receiving JSON body fits better for complex nested data.
+  // However, standard form submission sends form-urlencoded.
+  // Let's rely on a hidden input 'itemsJson' which contains the array of items.
+
+  let parsedItems = [];
+  if (req.body.itemsJson) {
+    try {
+      parsedItems = JSON.parse(req.body.itemsJson);
+    } catch (e) {
+      console.error('Error parsing items JSON', e);
+    }
+  }
+
+  const workOrderData = {
+    car_id: req.body.car_id,
+    service_type: req.body.service_type,
+    description: req.body.description,
+    status: req.body.status,
+    appointment_date: req.body.appointment_date,
+    items: parsedItems
+  };
+
+  const result = await createWorkOrder(workOrderData);
+  if (result.success) {
+    res.redirect('/admin/work-orders');
+  } else {
+    res.redirect('/admin/work-orders?error=' + encodeURIComponent(result.error));
+  }
+})
+
+// API to get work order details for editing
+app.get('/admin/api/work-orders/:id', requireAuth, requireAdmin, async (req, res) => {
+  console.log(`[API] Request for WO details ID: ${req.params.id}`); // DEBUG
+  try {
+    const workOrder = await getWorkOrderById(req.params.id);
+    if (!workOrder) {
+      console.log(`[API] WO ID ${req.params.id} not found`); // DEBUG
+      return res.status(404).json({ error: 'Not found' });
+    }
+    res.json(workOrder);
+  } catch (error) {
+    console.error(`[API] Error fetching WO ${req.params.id}:`, error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update Work Order
+app.post('/admin/work-orders/update/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const items = JSON.parse(req.body.itemsJson || '[]');
+    const result = await updateWorkOrder(req.params.id, {
+      ...req.body,
+      items
+    });
+
+    if (result.success) {
+      res.redirect('/admin/work-orders');
+    } else {
+      res.status(500).send('Error updating work order: ' + result.error);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Delete Work Order
+app.get('/admin/work-orders/delete/:id', requireAuth, requireAdmin, async (req, res) => {
+  const result = await deleteWorkOrder(req.params.id);
+  if (result.success) {
+    res.redirect('/admin/work-orders');
+  } else {
+    res.redirect('/admin/work-orders?error=' + encodeURIComponent(result.error));
+  }
+});
+
+// API to get cars by user id
+app.get('/admin/api/users/:id/cars', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { getCarsByUserId } = require('./module/admin/workOrderController');
+    const userCars = await getCarsByUserId(req.params.id);
+    res.json(userCars);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch cars' });
+  }
+});
 
 // ============== PORT =============== //
 app.listen(port, '0.0.0.0', async () => {

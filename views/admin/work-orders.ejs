@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="th">
+<%- include('./partials/head') %>
+
+    <body class="bg-gray-50 font-kanit">
+        <%- include('./partials/sidebar') %>
+
+            <!-- Main Content -->
+            <div class="lg:ml-64 min-h-screen flex flex-col">
+                <!-- Top Bar -->
+                <div class="bg-white border-b border-gray-200 sticky top-0 z-20">
+                    <div class="px-6 py-3 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <button onclick="toggleSidebar()" class="lg:hidden text-gray-500 hover:text-primary">
+                                <i class="fa-solid fa-bars text-xl"></i>
+                            </button>
+                            <nav class="flex" aria-label="Breadcrumb">
+                                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                                    <li class="inline-flex items-center">
+                                        <a href="/admin/dashboard"
+                                            class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary">
+                                            <i class="fa-solid fa-home mr-2"></i>
+                                            หน้าแรก
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="flex items-center">
+                                            <i class="fa-solid fa-chevron-right text-gray-400 mx-2"></i>
+                                            <span class="text-sm font-medium text-gray-500">ใบสั่งซ่อม</span>
+                                        </div>
+                                    </li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="text-right hidden sm:block">
+                                <div class="text-sm font-medium text-gray-900">
+                                    <%= user.firstName %>
+                                        <%= user.lastName %>
+                                </div>
+                                <div class="text-xs text-gray-500 capitalize">
+                                    <%= user.roles %>
+                                </div>
+                            </div>
+                            <div
+                                class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-lg font-bold shadow-sm">
+                                <%= user.firstName.charAt(0) %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page Content -->
+                <div class="p-6 flex-1">
+                    <div class="mb-6 flex justify-between items-end">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">ใบสั่งซ่อม</h1>
+                            <p class="text-gray-600 mt-1">จัดการงานซ่อมและบริการ</p>
+                        </div>
+                        <button onclick="openCreateModal()"
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i>สร้างใบสั่งซ่อม
+                        </button>
+                    </div>
+
+                    <!-- Actions Bar -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+                        <form action="/admin/work-orders" method="GET" class="flex flex-col md:flex-row gap-4">
+                            <div class="relative flex-1">
+                                <i
+                                    class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" name="search" value="<%= search %>"
+                                    placeholder="ค้นหาตามเลขที่, ลูกค้า, หรือทะเบียนรถ..."
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            </div>
+                            <div class="w-full md:w-48">
+                                <select name="status" onchange="this.form.submit()"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-gray-600">
+                                    <option value="all" <%=status==='all' ? 'selected' : '' %>>ทุกสถานะ</option>
+                                    <option value="pending" <%=status==='pending' ? 'selected' : '' %>>รอดำเนินการ
+                                    </option>
+                                    <option value="checking" <%=status==='checking' ? 'selected' : '' %>>กำลังตรวจเช็ค
+                                    </option>
+                                    <option value="waiting_parts" <%=status==='waiting_parts' ? 'selected' : '' %>
+                                        >รออะไหล่</option>
+                                    <option value="repairing" <%=status==='repairing' ? 'selected' : '' %>>กำลังซ่อมแซม
+                                    </option>
+                                    <option value="completed" <%=status==='completed' ? 'selected' : '' %>>ซ่อมเสร็จสิ้น
+                                    </option>
+                                    <option value="ready_for_pickup" <%=status==='ready_for_pickup' ? 'selected' : '' %>
+                                        >รอรับรถ</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Work Orders Table -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 uppercase">
+                                        <th class="p-4 font-medium">เลขที่</th>
+                                        <th class="p-4 font-medium">รถยนต์</th>
+                                        <th class="p-4 font-medium">ลูกค้า</th>
+                                        <th class="p-4 font-medium">รายการซ่อม</th>
+                                        <th class="p-4 font-medium text-right">ราคาโดยประมาณ</th>
+                                        <th class="p-4 font-medium text-center">สถานะ</th>
+                                        <th class="p-4 font-medium text-right">เข้ารับบริการล่าสุด</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <% if (workOrders.length> 0) { %>
+                                        <% workOrders.forEach(wo=> { %>
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="p-4 font-medium text-gray-900">#<%=
+                                                        String(wo.id).padStart(5, '0' ) %>
+                                                </td> <!-- Assuming ID is int, standardizing display -->
+                                                <td class="p-4 text-gray-700">
+                                                    <%= wo.year %>
+                                                        <%= wo.brand %>
+                                                            <%= wo.model %>
+                                                </td>
+                                                <td class="p-4 text-gray-700">
+                                                    <%= wo.first_name %>
+                                                        <%= wo.last_name %>
+                                                </td>
+                                                <td class="p-4 text-gray-600 truncate max-w-xs">
+                                                    <%= wo.service_type %>
+                                                </td>
+                                                <td class="p-4 text-right font-medium text-gray-900">฿<%= wo.cost ?
+                                                        wo.cost.toLocaleString() : '0' %>
+                                                </td>
+                                                <td class="p-4 text-center">
+                                                    <% let statusClass='bg-gray-100 text-gray-600' ; let
+                                                        statusText=wo.status; if (wo.status==='pending' ) {
+                                                        statusClass='bg-yellow-50 text-yellow-600 border border-yellow-200'
+                                                        ; statusText='รอดำเนินการ' ; } else if (wo.status==='checking' )
+                                                        { statusClass='bg-blue-50 text-blue-600 border border-blue-200'
+                                                        ; statusText='กำลังตรวจเช็ค' ; } else if
+                                                        (wo.status==='repairing' ) {
+                                                        statusClass='bg-orange-50 text-orange-600 border border-orange-200'
+                                                        ; statusText='กำลังซ่อมแซม' ; } else if (wo.status==='completed'
+                                                        ) {
+                                                        statusClass='bg-green-50 text-green-600 border border-green-200'
+                                                        ; statusText='เสร็จสิ้น' ; } else if
+                                                        (wo.status==='waiting_parts' ) {
+                                                        statusClass='bg-red-50 text-red-600 border border-red-200' ;
+                                                        statusText='รออะไหล่' ; } else if
+                                                        (wo.status==='ready_for_pickup' ) {
+                                                        statusClass='bg-teal-50 text-teal-600 border border-teal-200' ;
+                                                        statusText='รอรับรถ' ; } %>
+                                                        <span
+                                                            class="inline-block px-3 py-1 rounded-full text-xs font-medium <%= statusClass %>">
+                                                            <%= statusText %>
+                                                        </span>
+                                                </td>
+                                                <td class="p-4 text-right">
+                                                    <div class="flex items-center justify-end gap-2">
+                                                        <button onclick="openEditModal('<%= wo.id %>')"
+                                                            class="text-gray-400 hover:text-primary transition-colors">
+                                                            <i class="fa-solid fa-edit"></i>
+                                                        </button>
+                                                        <button onclick="confirmDelete('<%= wo.id %>')"
+                                                            class="text-gray-400 hover:text-red-500 transition-colors">
+                                                            <i class="fa-solid fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td class="p-4 text-right text-gray-500 hidden">
+                                                    <%= new Date(wo.created_at).toLocaleDateString('th-TH') %>
+                                                </td>
+                                            </tr>
+                                            <% }); %>
+                                                <% } else { %>
+                                                    <tr>
+                                                        <td colspan="7" class="p-8 text-center text-gray-500">
+                                                            ไม่พบข้อมูลใบสั่งซ่อม</td>
+                                                    </tr>
+                                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <% if (pagination.totalPages> 1) { %>
+                            <div class="p-4 border-t border-gray-100 flex items-center justify-between">
+                                <span class="text-sm text-gray-500">
+                                    แสดง <%= (pagination.page - 1) * pagination.limit + 1 %> ถึง <%=
+                                            Math.min(pagination.page * pagination.limit, pagination.totalItems) %> จาก
+                                            <%= pagination.totalItems %> รายการ
+                                </span>
+                                <div class="flex gap-1">
+                                    <% if (pagination.page> 1) { %>
+                                        <a href="/admin/work-orders?page=<%= pagination.page - 1 %>&search=<%= search %>&status=<%= status %>"
+                                            class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-500 hover:bg-gray-50 text-sm">
+                                            <i class="fa-solid fa-chevron-left"></i>
+                                        </a>
+                                        <% } %>
+
+                                            <span
+                                                class="w-8 h-8 flex items-center justify-center rounded bg-primary text-white text-sm">
+                                                <%= pagination.page %>
+                                            </span>
+
+                                            <% if (pagination.page < pagination.totalPages) { %>
+                                                <a href="/admin/work-orders?page=<%= pagination.page + 1 %>&search=<%= search %>&status=<%= status %>"
+                                                    class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-500 hover:bg-gray-50 text-sm">
+                                                    <i class="fa-solid fa-chevron-right"></i>
+                                                </a>
+                                                <% } %>
+                                </div>
+                            </div>
+                            <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Work Order Modal -->
+            <div id="createModal"
+                class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <form action="/admin/work-orders/create" method="POST" id="createForm" class="flex flex-col h-full">
+                        <div
+                            class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-xl sticky top-0 z-10">
+                            <h3 class="text-lg font-bold text-gray-900">สร้างใบสั่งซ่อมใหม่</h3>
+                            <button type="button" onclick="closeCreateModal()"
+                                class="text-gray-400 hover:text-gray-600">
+                                <i class="fa-solid fa-times text-xl"></i>
+                            </button>
+                        </div>
+
+                        <div class="p-6 space-y-6">
+                            <!-- Section 1: User & Car -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-700">ลูกค้า <span
+                                            class="text-red-500">*</span></label>
+                                    <select name="user_id" id="userSelect" required onchange="loadUserCars()"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white">
+                                        <option value="">เลือกลูกค้า</option>
+                                        <% users.forEach(u=> { %>
+                                            <option value="<%= u.id %>">
+                                                <%= u.first_name %>
+                                                    <%= u.last_name %> (<%= u.phone %>)
+                                            </option>
+                                            <% }); %>
+                                    </select>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-700">รถยนต์ <span
+                                            class="text-red-500">*</span></label>
+                                    <select name="car_id" id="carSelect" required disabled
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-gray-50 disabled:cursor-not-allowed">
+                                        <option value="">กรุณาเลือกลูกค้าก่อน</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Section 2: Service Details -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="md:col-span-2 space-y-1">
+                                    <label class="text-sm font-medium text-gray-700">ชื่องานซ่อม <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="text" name="service_type" required
+                                        placeholder="เช่น เปลี่ยนถ่ายน้ำมันเครื่อง, เช็คระยะ 10,000 กม."
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-700">วันที่นัดหมาย</label>
+                                    <input type="date" name="appointment_date" required
+                                        value="<%= new Date().toISOString().split('T')[0] %>"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-700">สถานะเริ่มต้น</label>
+                                    <select name="status"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white">
+                                        <option value="pending">รอดำเนินการ</option>
+                                        <option value="checking">กำลังตรวจเช็ค</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-3 space-y-1">
+                                    <label class="text-sm font-medium text-gray-700">รายละเอียดเพิ่มเติม</label>
+                                    <textarea name="description" rows="2"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Section 3: Items (Parts & Service) -->
+                            <div class="border-t border-gray-100 pt-6">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h4 class="font-bold text-gray-900">รายการอะไหล่และค่าบริการ</h4>
+                                    <button type="button" onclick="addItemRow()"
+                                        class="text-sm text-primary hover:text-green-700 font-medium flex items-center gap-1">
+                                        <i class="fa-solid fa-plus-circle"></i> เพิ่มรายการ
+                                    </button>
+                                </div>
+
+                                <div class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                                    <table class="w-full text-left" id="itemsTable">
+                                        <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
+                                            <tr>
+                                                <th class="p-3 w-10">#</th>
+                                                <th class="p-3">รายการ</th>
+                                                <th class="p-3 w-24 text-center">จำนวน</th>
+                                                <th class="p-3 w-32 text-right">ราคา/หน่วย</th>
+                                                <th class="p-3 w-32 text-right">รวม</th>
+                                                <th class="p-3 w-10"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200" id="itemsTableBody">
+                                            <!-- Items will be added here -->
+                                        </tbody>
+                                        <tfoot class="bg-white font-bold text-gray-900">
+                                            <tr>
+                                                <td colspan="4" class="p-3 text-right">ราคารวมทั้งสิ้น</td>
+                                                <td class="p-3 text-right text-lg text-primary" id="grandTotal">฿0.00
+                                                </td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">* เลือกรายการจากคลังสินค้าเพื่อตัดสต็อกอัตโนมัติ
+                                </p>
+                            </div>
+                        </div>
+
+                        <div
+                            class="p-6 border-t border-gray-100 bg-gray-50 rounded-b-xl flex justify-end gap-3 sticky bottom-0 z-10">
+                            <input type="hidden" name="itemsJson" id="itemsJson">
+                            <button type="button" onclick="closeCreateModal()"
+                                class="px-6 py-2.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors font-medium">ยกเลิก</button>
+                            <button type="button" onclick="submitForm()"
+                                class="px-6 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors font-medium shadow-sm flex items-center gap-2">
+                                <i class="fa-solid fa-save"></i>
+                                บันทึกใบสั่งซ่อม
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Inventory Data for JS (Safe Method) -->
+            <script id="inventory-data" type="application/json">
+                <%- JSON.stringify(inventoryItems || []) %>
+            </script>
+
+            <script>
+                // Load Inventory Data
+                let inventoryItems = [];
+                try {
+                    const rawData = document.getElementById('inventory-data').textContent;
+                    inventoryItems = JSON.parse(rawData);
+                } catch (e) {
+                    console.error('Error parsing inventory data:', e);
+                    inventoryItems = [];
+                }
+
+                // --- Modal Logic ---
+                function openCreateModal() {
+                    document.getElementById('createModal').classList.remove('hidden');
+                    // Add one empty row by default if empty
+                    if (document.getElementById('itemsTableBody').children.length === 0) {
+                        addItemRow();
+                    }
+                }
+
+                function closeCreateModal() {
+                    document.getElementById('createModal').classList.add('hidden');
+                }
+
+                // --- Car Loading Logic ---
+                async function loadUserCars() {
+                    const userId = document.getElementById('userSelect').value;
+                    const carSelect = document.getElementById('carSelect');
+
+                    carSelect.innerHTML = '<option value="">กำลังโหลด...</option>';
+                    carSelect.disabled = true;
+                    carSelect.classList.add('bg-gray-50');
+
+                    if (!userId) {
+                        carSelect.innerHTML = '<option value="">กรุณาเลือกลูกค้าก่อน</option>';
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/admin/api/users/${userId}/cars`);
+                        if (!response.ok) throw new Error('Failed to fetch');
+                        const cars = await response.json();
+
+                        if (cars && cars.length > 0) {
+                            carSelect.innerHTML = '<option value="">เลือกรถยนต์</option>';
+                            cars.forEach(car => {
+                                carSelect.innerHTML += `<option value="${car.id}">${car.brand} ${car.model} (${car.license_plate})</option>`;
+                            });
+                            carSelect.disabled = false;
+                            carSelect.classList.remove('bg-gray-50');
+                            carSelect.classList.add('bg-white');
+                        } else {
+                            carSelect.innerHTML = '<option value="">ลูกค้าท่านนี้ไม่มีรถยนต์ในระบบ</option>';
+                        }
+                    } catch (error) {
+                        console.error('Error loading cars:', error);
+                        carSelect.innerHTML = '<option value="">เกิดข้อผิดพลาดในการโหลดข้อมูล</option>';
+                    }
+                }
+
+                // --- Items Table Logic ---
+                let rowCount = 0;
+
+                function addItemRow() {
+                    try {
+                        rowCount++;
+                        const tbody = document.getElementById('itemsTableBody');
+                        const tr = document.createElement('tr');
+                        tr.id = `row-${rowCount}`;
+                        tr.className = 'bg-white';
+
+                        // Escape function to prevent attribute breaking
+                        const escapeHtml = (unsafe) => {
+                            if (typeof unsafe !== 'string') return unsafe;
+                            return unsafe
+                                .replace(/&/g, "&amp;")
+                                .replace(/</g, "&lt;")
+                                .replace(/>/g, "&gt;")
+                                .replace(/"/g, "&quot;")
+                                .replace(/'/g, "&#039;");
+                        }
+
+                        let inventoryOptions = '<option value="">-- เลือกจากคลัง (ไม่ระบุ = กรอกเอง) --</option>';
+                        if (inventoryItems && inventoryItems.length > 0) {
+                            inventoryItems.forEach(item => {
+                                const safeName = escapeHtml(item.name);
+                                inventoryOptions += `<option value="${item.id}" data-price="${item.selling_price}" data-name="${safeName}">${safeName} (คงเหลือ: ${item.quantity})</option>`;
+                            });
+                        }
+
+                        tr.innerHTML = `
+                            <td class="p-3 text-center text-gray-400 align-top pt-4">${rowCount}</td>
+                            <td class="p-3 align-top">
+                                <div class="flex flex-col gap-2">
+                                    <select class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:outline-none focus:border-primary"
+                                        onchange="onInventorySelect(this, ${rowCount})">
+                                        ${inventoryOptions}
+                                    </select>
+                                <input type="text" placeholder="ระบุชื่อรายการ (ถ้าไม่เลือกจากคลัง)"
+                                    class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:outline-none focus:border-primary item-name-input">
+                            </div>
+                        </td>
+                        <td class="p-3 align-top">
+                            <input type="number" value="1" min="1"
+                                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 text-center focus:outline-none focus:border-primary quantity-input"
+                                onchange="calculateRow(${rowCount})" onkeyup="calculateRow(${rowCount})">
+                        </td>
+                        <td class="p-3 align-top">
+                            <input type="number" value="0.00" min="0" step="0.01"
+                                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 text-right focus:outline-none focus:border-primary price-input"
+                                onchange="calculateRow(${rowCount})" onkeyup="calculateRow(${rowCount})">
+                        </td>
+                        <td class="p-3 text-right align-top pt-4 font-medium row-total" data-total="0">
+                            ฿0.00
+                        </td>
+                        <td class="p-3 text-center align-top pt-3">
+                            <button type="button" onclick="removeRow(${rowCount})" class="text-red-400 hover:text-red-600 transition-colors">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                        tbody.appendChild(tr);
+                    } catch (e) {
+                        console.error("Add Item Error:", e);
+                        alert("เกิดข้อผิดพลาดในการเพิ่มรายการ: " + e.message);
+                    }
+                }
+
+                function removeRow(id) {
+                    const row = document.getElementById(`row-${id}`);
+                    if (row) row.remove();
+                    calculateGrandTotal();
+                }
+
+                function onInventorySelect(select, rowId) {
+                    const row = document.getElementById(`row-${rowId}`);
+                    const nameInput = row.querySelector('.item-name-input');
+                    const priceInput = row.querySelector('.price-input');
+
+                    const selectedOption = select.options[select.selectedIndex];
+                    const price = selectedOption.getAttribute('data-price');
+                    const name = selectedOption.getAttribute('data-name');
+
+                    if (select.value) {
+                        // Stock item selected
+                        nameInput.value = name;
+                        // Optional: make it read-only or allow editing description?
+                        // Usually better to lock name to avoid confusion with stock items.
+                        nameInput.readOnly = true;
+                        nameInput.classList.add('bg-gray-50');
+
+                        priceInput.value = price;
+                        // priceInput.readOnly = true; // Optional: Allow price override? Let's allow for now.
+                    } else {
+                        // Manual entry
+                        nameInput.value = '';
+                        nameInput.readOnly = false;
+                        nameInput.classList.remove('bg-gray-50');
+
+                        priceInput.value = '0.00';
+                    }
+                    calculateRow(rowId);
+                }
+
+                function calculateRow(rowId) {
+                    const row = document.getElementById(`row-${rowId}`);
+                    if (!row) return;
+
+                    const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+                    const price = parseFloat(row.querySelector('.price-input').value) || 0;
+                    const total = quantity * price;
+
+                    row.querySelector('.row-total').innerText = '฿' + total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    row.querySelector('.row-total').setAttribute('data-total', total); // Update data attribute
+
+                    calculateGrandTotal();
+                }
+
+                function calculateGrandTotal() {
+                    let total = 0;
+                    document.querySelectorAll('#itemsTableBody tr').forEach(row => {
+                        const rowTotal = parseFloat(row.querySelector('.row-total').getAttribute('data-total')) || 0;
+                        total += rowTotal;
+                    });
+                    document.getElementById('grandTotal').innerText = '฿' + total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                }
+
+                function submitForm() {
+                    const items = [];
+                    // Validate Form
+                    if (!document.getElementById('userSelect').value) { alert('กรุณาเลือกลูกค้า'); return; }
+                    if (!document.getElementById('carSelect').value) { alert('กรุณาเลือกรถยนต์'); return; }
+                    if (!document.querySelector('input[name="service_type"]').value) { alert('กรุณาระบุชื่องานซ่อม'); return; }
+
+                    let hasItems = false;
+                    document.querySelectorAll('#itemsTableBody tr').forEach(row => {
+                        const inventoryId = row.querySelector('select').value;
+                        // Use class selector to get input values, robust against structure changes
+                        const nameInput = row.querySelector('.item-name-input');
+                        const qtyInput = row.querySelector('.quantity-input');
+                        const priceInput = row.querySelector('.price-input');
+
+                        if (!nameInput || !qtyInput || !priceInput) return;
+
+                        const itemName = nameInput.value;
+                        const quantity = parseFloat(qtyInput.value) || 0;
+                        const unitPrice = parseFloat(priceInput.value) || 0;
+
+                        if (itemName && quantity > 0) {
+                            items.push({
+                                inventory_id: inventoryId || null, // Ensure null if empty string
+                                item_name: itemName,
+                                quantity: quantity,
+                                unit_price: unitPrice
+                            });
+                            hasItems = true;
+                        }
+                    });
+
+                    document.getElementById('itemsJson').value = JSON.stringify(items);
+                    document.getElementById('createForm').submit();
+                }
+
+                // --- Edit Mode Logic ---
+                async function openEditModal(id) {
+                    try {
+                        const response = await fetch(`/admin/api/work-orders/${id}`);
+                        if (!response.ok) throw new Error("Load failed");
+                        const data = await response.json();
+
+                        // 1. Setup Modal for Edit
+                        const modalTitle = document.querySelector('#createModal h3');
+                        if (modalTitle) modalTitle.innerText = `แก้ไขใบสั่งซ่อม #${String(data.id).padStart(5, '0')}`;
+
+                        const form = document.getElementById('createForm');
+                        form.action = `/admin/work-orders/update/${id}`;
+
+                        // 2. Fill Basic Fields
+                        // Set User and wait for cars to load
+                        const userSelect = document.getElementById('userSelect');
+                        userSelect.value = data.user_id;
+                        await loadUserCars(); // This fetches cars for the selected user
+
+                        // Set Car
+                        const carSelect = document.getElementById('carSelect');
+                        carSelect.value = data.car_id;
+
+                        form.querySelector('input[name="service_type"]').value = data.service_type || '';
+                        form.querySelector('input[name="appointment_date"]').value = data.appointment_date ? data.appointment_date.split('T')[0] : '';
+                        form.querySelector('select[name="status"]').value = data.status;
+                        form.querySelector('textarea[name="description"]').value = data.description || '';
+
+                        // 3. Fill Items
+                        const tbody = document.getElementById('itemsTableBody');
+                        tbody.innerHTML = ''; // Clear existing empty row
+                        rowCount = 0; // Reset counter
+
+                        if (data.items && data.items.length > 0) {
+                            data.items.forEach(item => {
+                                addItemRow(); // Create a new row
+                                const currentRowId = rowCount;
+                                const row = document.getElementById(`row-${currentRowId}`);
+
+                                // Set Inventory Select
+                                const select = row.querySelector('select');
+                                if (item.inventory_id) {
+                                    select.value = item.inventory_id;
+                                    onInventorySelect(select, currentRowId); // Trigger change to lock name/set price
+                                } else {
+                                    // Manual Item
+                                    select.value = "";
+                                    onInventorySelect(select, currentRowId);
+
+                                    // Set manual values
+                                    const nameInput = row.querySelector('.item-name-input');
+                                    nameInput.value = item.item_name;
+                                    const priceInput = row.querySelector('.price-input');
+                                    priceInput.value = item.unit_price;
+                                }
+
+                                // Set Quantity
+                                const qtyInput = row.querySelector('.quantity-input');
+                                qtyInput.value = item.quantity;
+
+                                calculateRow(currentRowId);
+                            });
+                        } else {
+                            addItemRow(); // Add empty if none
+                        }
+
+                        openCreateModal(true); // Open modal (flag to skip adding default row)
+
+                    } catch (e) {
+                        console.error(e);
+                        alert('ไม่สามารถโหลดข้อมูลได้');
+                    }
+                }
+
+                // Override openCreateModal to support "Edit Mode" clearing
+                const originalOpenCreateModal = openCreateModal;
+                openCreateModal = function (isEdit = false) {
+                    document.getElementById('createModal').classList.remove('hidden');
+
+                    if (!isEdit) {
+                        // Reset to Create Mode
+                        const modalTitle = document.querySelector('#createModal h3');
+                        if (modalTitle) modalTitle.innerText = "สร้างใบสั่งซ่อมใหม่";
+
+                        const form = document.getElementById('createForm');
+                        form.action = "/admin/work-orders/create";
+                        form.reset();
+
+                        // Reset Car Select
+                        const carSelect = document.getElementById('carSelect');
+                        carSelect.innerHTML = '<option value="">กรุณาเลือกลูกค้าก่อน</option>';
+                        carSelect.disabled = true;
+                        carSelect.classList.add('bg-gray-50');
+
+                        // Clean Table
+                        document.getElementById('itemsTableBody').innerHTML = '';
+                        rowCount = 0;
+                        addItemRow(); // One empty row
+                        addItemRow(); // One empty row
+                    }
+                }
+
+                function confirmDelete(id) {
+                    if (confirm('คุณต้องการลบใบสั่งซ่อมนี้ใช่หรือไม่? \n(จำนวนสินค้าจะถูกคืนสต็อก)')) {
+                        window.location.href = `/admin/work-orders/delete/${id}`;
+                    }
+                }
+            </script>
+    </body>
+
+</html>

@@ -46,6 +46,23 @@ async function runMigrations() {
         `);
         console.log('Migration: Inventory table checked/created.');
 
+        // 6. Create Work Order Items Table
+        await sql.query(`
+            CREATE TABLE IF NOT EXISTS work_order_items (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                work_order_id INT NOT NULL,
+                inventory_id INT DEFAULT NULL,
+                item_name VARCHAR(255) NOT NULL,
+                quantity INT NOT NULL DEFAULT 1,
+                unit_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                total_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (work_order_id) REFERENCES work_orders(id) ON DELETE CASCADE,
+                FOREIGN KEY (inventory_id) REFERENCES inventory(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        `);
+        console.log('Migration: Work Order Items table checked/created.');
+
         console.log('All migrations completed successfully.');
 
     } catch (error) {
