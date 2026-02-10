@@ -62,22 +62,20 @@
                     <!-- Filters & Search -->
                     <div
                         class="bg-white rounded-t-xl shadow-sm border-b border-gray-100 p-4 flex flex-col sm:flex-row gap-3">
-                        <div class="relative flex-1">
+                        <form action="/admin/customers" method="GET" class="relative flex-1">
                             <i
                                 class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input type="text" placeholder="ค้นหาลูกค้า..."
+                            <input type="text" name="search" value="<%= pagination.search %>"
+                                placeholder="ค้นหาลูกค้า..."
                                 class="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm">
-                        </div>
+                        </form>
                         <div class="flex gap-2">
-                            <button
+                            <!-- Helper button to submit form on helper click if needed, or just let enter key work -->
+                            <a href="/admin/customers/export?search=<%= pagination.search %>"
                                 class="px-3 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-sliders"></i> <span class="hidden sm:inline">ตัวกรอง</span>
-                            </button>
-                            <button
-                                class="px-3 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-external-link-alt"></i> <span
-                                    class="hidden sm:inline">ส่งออก</span>
-                            </button>
+                                <i class="fa-solid fa-external-link-alt"></i> <span class="hidden sm:inline">ส่งออก
+                                    CSV</span>
+                            </a>
                         </div>
                     </div>
 
@@ -167,7 +165,7 @@
 
                             <div class="flex items-center gap-1">
                                 <% if (pagination.page> 1) { %>
-                                    <a href="/admin/customers?page=<%= pagination.page - 1 %>"
+                                    <a href="/admin/customers?page=<%= pagination.page - 1 %>&search=<%= pagination.search %>"
                                         class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700">
                                         <i class="fa-solid fa-chevron-left text-xs"></i>
                                     </a>
@@ -179,14 +177,14 @@
                                         <% } %>
 
                                             <% for(let i=1; i <=pagination.totalPages; i++) { %>
-                                                <a href="/admin/customers?page=<%= i %>"
+                                                <a href="/admin/customers?page=<%= i %>&search=<%= pagination.search %>"
                                                     class="w-8 h-8 flex items-center justify-center rounded border <%= pagination.page === i ? 'border-primary bg-primary text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50' %> text-sm font-medium transition-colors">
                                                     <%= i %>
                                                 </a>
                                                 <% } %>
 
                                                     <% if (pagination.page < pagination.totalPages) { %>
-                                                        <a href="/admin/customers?page=<%= pagination.page + 1 %>"
+                                                        <a href="/admin/customers?page=<%= pagination.page + 1 %>&search=<%= pagination.search %>"
                                                             class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700">
                                                             <i class="fa-solid fa-chevron-right text-xs"></i>
                                                         </a>

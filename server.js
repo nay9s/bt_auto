@@ -215,7 +215,7 @@ app.get('/logout', logout)
 
 // ==============  ADMIN  =============== //
 const { requireAdmin } = require('./module/auth/requireAdmin')
-const { getCustomers, addCustomer } = require('./module/admin/customerController')
+const { getCustomers, addCustomer, exportCustomers } = require('./module/admin/customerController')
 
 app.post('/admin/customers/add', requireAuth, requireAdmin, async (req, res) => {
   const result = await addCustomer(req.body);
@@ -229,12 +229,31 @@ app.post('/admin/customers/add', requireAuth, requireAdmin, async (req, res) => 
   }
 })
 
+app.get('/admin/customers/export', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const search = req.query.search || '';
+    const csvData = await exportCustomers(search);
+
+    // Add BOM for Excel UTF-8 compatibility
+    const bom = '\ufeff';
+    const csvContent = bom + csvData;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=customers.csv');
+    res.send(csvContent);
+  } catch (error) {
+    console.error('Error exporting customers:', error);
+    res.status(500).send('เกิดข้อผิดพลาดในการส่งออกข้อมูล');
+  }
+})
+
 app.get('/admin/customers', requireAuth, requireAdmin, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
+    const search = req.query.search || '';
 
-    const data = await getCustomers(page, limit);
+    const data = await getCustomers(page, limit, search);
 
     const userSession = req.session.user;
     const userView = {
