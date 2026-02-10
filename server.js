@@ -217,11 +217,13 @@ app.get('/logout', logout)
 const { requireAdmin } = require('./module/auth/requireAdmin')
 const { getCustomers, addCustomer, exportCustomers, getCustomerById, editCustomer } = require('./module/admin/customerController')
 const { getCars, addCar, searchOwners, getCarById, editCar, exportCars } = require('./module/admin/carController')
+const { getInventory, addItem, updateItem, deleteItem } = require('./module/admin/inventoryController')
 const { runMigrations } = require('./module/migrations/migration')
 const multer = require('multer')
 const fs = require('fs')
 
 // Configure Multer
+// Configure Multer for Cars
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const dir = './public/uploads/cars';
@@ -235,6 +237,21 @@ const storage = multer.diskStorage({
   }
 })
 const upload = multer({ storage: storage })
+
+// Configure Multer for Inventory
+const storageInventory = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = './public/uploads/inventory';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir)
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname))
+  }
+})
+const uploadInventory = multer({ storage: storageInventory })
 
 // --- API --- //
 app.get('/admin/api/owners', requireAuth, requireAdmin, async (req, res) => {
@@ -384,6 +401,48 @@ app.post('/admin/cars/edit/:id', requireAuth, requireAdmin, upload.single('image
     res.redirect('/admin/cars');
   } else {
     res.redirect('/admin/cars?error=' + encodeURIComponent(result.error));
+  }
+})
+
+// --- INVENTORY --- //
+app.get('/admin/inventory', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const search = req.query.search || '';
+    const filter = req.query.filter || 'all';
+
+    const data = await getInventory(page, limit, search, filter);
+
+    const userSession = req.session.user;
+    const userView = {
+      ...userSession,
+      firstName: userSession.first_name || userSession.firstName,
+      lastName: userSession.last_name || userSession.lastName,
+      roles: userSession.role || userSession.roles
+    };
+
+    res.render('admin/inventory', {
+      user: userView,
+      path: '/admin/inventory',
+      items: data.items,
+      pagination: data.pagination,
+      stats: data.stats,
+      search,
+      filter
+    });
+  } catch (error) {
+    console.error('Error fetching inventory:', error);
+    res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูลคลังสินค้า');
+  }
+})
+
+app.post('/admin/inventory/add', requireAuth, requireAdmin, uploadInventory.single('image'), async (req, res) => {
+  const result = await addItem(req.body, req.file);
+  if (result.success) {
+    res.redirect('/admin/inventory');
+  } else {
+    res.redirect('/admin/inventory?error=' + encodeURIComponent(result.error));
   }
 })
 

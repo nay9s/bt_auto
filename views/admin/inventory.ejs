@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="th">
+<%- include('./partials/head') %>
+
+    <body class="bg-gray-50 font-kanit">
+        <%- include('./partials/sidebar') %>
+
+            <!-- Main Content -->
+            <div class="lg:ml-64 min-h-screen flex flex-col">
+                <!-- Top Bar -->
+                <div class="bg-white border-b border-gray-200 sticky top-0 z-20">
+                    <div class="px-6 py-3 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <button onclick="toggleSidebar()" class="lg:hidden text-gray-500 hover:text-primary">
+                                <i class="fa-solid fa-bars text-xl"></i>
+                            </button>
+                            <nav class="flex" aria-label="Breadcrumb">
+                                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                                    <li class="inline-flex items-center">
+                                        <a href="/admin/dashboard"
+                                            class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary">
+                                            <i class="fa-solid fa-home mr-2"></i>
+                                            หน้าแรก
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="flex items-center">
+                                            <i class="fa-solid fa-chevron-right text-gray-400 mx-2"></i>
+                                            <span class="text-sm font-medium text-gray-500">คลังสินค้า</span>
+                                        </div>
+                                    </li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="text-right hidden sm:block">
+                                <div class="text-sm font-medium text-gray-900">
+                                    <%= user.firstName %>
+                                        <%= user.lastName %>
+                                </div>
+                                <div class="text-xs text-gray-500 capitalize">
+                                    <%= user.roles %>
+                                </div>
+                            </div>
+                            <div
+                                class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-lg font-bold shadow-sm">
+                                <%= user.firstName.charAt(0) %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page Content -->
+                <div class="p-6 flex-1">
+                    <div class="mb-6">
+                        <h1 class="text-2xl font-bold text-gray-900">คลังสินค้า</h1>
+                        <p class="text-gray-600 mt-1">จัดการรายการสินค้าคงคลังทั้งหมด</p>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10">
+                                <i class="fa-solid fa-boxes-stacked text-6xl text-blue-500"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">รายการทั้งหมด</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1">
+                                    <%= stats.totalItems || 0 %>
+                                </p>
+                            </div>
+                            <div
+                                class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-500 mt-4">
+                                <i class="fa-solid fa-box"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10">
+                                <i class="fa-solid fa-sack-dollar text-6xl text-green-500"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">มูลค่ารวม</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1">฿<%= (stats.totalValue ||
+                                        0).toLocaleString() %>
+                                </p>
+                            </div>
+                            <div
+                                class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center text-green-500 mt-4">
+                                <i class="fa-solid fa-dollar-sign"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10">
+                                <i class="fa-solid fa-triangle-exclamation text-6xl text-red-500"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">ต้องสั่งซื้อเพิ่ม (Low Stock)</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1">
+                                    <%= stats.lowStockCount || 0 %>
+                                </p>
+                                <p class="text-xs text-red-500 mt-1">สินค้าต่ำกว่าจุดสั่งซื้อ</p>
+                            </div>
+                            <div
+                                class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center text-red-500 mt-4">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions Bar -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+                        <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
+                            <form action="/admin/inventory" method="GET" class="flex flex-1 gap-2 w-full md:w-auto">
+                                <div class="relative flex-1">
+                                    <i
+                                        class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                    <input type="text" name="search" value="<%= search %>"
+                                        placeholder="ค้นหาชื่อ, รหัสอะไหล่ (SKU)..."
+                                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                </div>
+                                <select name="filter" onchange="this.form.submit()"
+                                    class="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-gray-600">
+                                    <option value="all" <%=filter==='all' ? 'selected' : '' %>>ทั้งหมด</option>
+                                    <option value="น้ำมันเครื่อง" <%=filter==='น้ำมันเครื่อง' ? 'selected' : '' %>
+                                        >น้ำมันเครื่อง
+                                    </option>
+                                    <option value="ช่วงล่าง" <%=filter==='ช่วงล่าง' ? 'selected' : '' %>>ช่วงล่าง
+                                    </option>
+                                    <option value="ระบบเบรก" <%=filter==='ระบบเบรก' ? 'selected' : '' %>>ระบบเบรก
+                                    </option>
+                                    <option value="ไส้กรอง" <%=filter==='ไส้กรอง' ? 'selected' : '' %>>ไส้กรอง</option>
+                                    <option value="เครื่องยนต์" <%=filter==='เครื่องยนต์' ? 'selected' : '' %>
+                                        >เครื่องยนต์</option>
+                                    <option value="ภายนอก" <%=filter==='ภายนอก' ? 'selected' : '' %>>ภายนอก</option>
+                                    <option value="แบตเตอรี่" <%=filter==='แบตเตอรี่' ? 'selected' : '' %>>แบตเตอรี่
+                                    </option>
+                                    <option value="ของเหลว" <%=filter==='ของเหลว' ? 'selected' : '' %>>ของเหลว</option>
+                                </select>
+                            </form>
+                            <button onclick="openAddModal()"
+                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap">
+                                <i class="fa-solid fa-plus"></i>
+                                เพิ่มอะไหล่ใหม่
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Table -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 uppercase">
+                                        <th class="p-4 font-medium">ชื่ออะไหล่ / รหัส</th>
+                                        <th class="p-4 font-medium">ประเภท</th>
+                                        <th class="p-4 font-medium text-center">คงเหลือ</th>
+                                        <th class="p-4 font-medium text-right">ราคาต้นทุน</th>
+                                        <th class="p-4 font-medium text-right">ราคาขาย</th>
+                                        <th class="p-4 font-medium">ผู้จำหน่าย</th>
+                                        <th class="p-4 font-medium text-center">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <% if (items.length> 0) { %>
+                                        <% items.forEach(item=> { %>
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="p-4">
+                                                    <div class="flex items-center gap-3">
+                                                        <div
+                                                            class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+                                                            <% if (item.image_url) { %>
+                                                                <img src="<%= item.image_url %>" alt="<%= item.name %>"
+                                                                    class="w-full h-full object-cover">
+                                                                <% } else { %>
+                                                                    <i class="fa-solid fa-box text-gray-400"></i>
+                                                                    <% } %>
+                                                        </div>
+                                                        <div>
+                                                            <p class="font-medium text-gray-900">
+                                                                <%= item.name %>
+                                                            </p>
+                                                            <p class="text-xs text-gray-500">SKU: <%= item.sku %>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="p-4">
+                                                    <span
+                                                        class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-600">
+                                                        <%= item.category %>
+                                                    </span>
+                                                </td>
+                                                <td class="p-4 text-center">
+                                                    <div class="flex flex-col items-center">
+                                                        <span
+                                                            class="font-bold <%= item.quantity <= item.min_quantity ? 'text-red-600' : 'text-gray-900' %>">
+                                                            <%= item.quantity %>
+                                                        </span>
+                                                        <% if (item.quantity <=item.min_quantity) { %>
+                                                            <span class="text-[10px] text-red-500">ต่ำกว่า Min (<%=
+                                                                    item.min_quantity %>)</span>
+                                                            <% } else { %>
+                                                                <span class="text-[10px] text-gray-400">Min: <%=
+                                                                        item.min_quantity %></span>
+                                                                <% } %>
+                                                    </div>
+                                                </td>
+                                                <td class="p-4 text-right text-gray-500">฿<%=
+                                                        item.cost_price.toLocaleString() %>
+                                                </td>
+                                                <td class="p-4 text-right font-medium text-gray-900">฿<%=
+                                                        item.selling_price.toLocaleString() %>
+                                                </td>
+                                                <td class="p-4 text-gray-600 text-sm">
+                                                    <div class="flex items-center gap-2">
+                                                        <i class="fa-solid fa-store text-gray-400"></i>
+                                                        <%= item.supplier || '-' %>
+                                                    </div>
+                                                </td>
+                                                <td class="p-4 text-center">
+                                                    <div class="flex items-center justify-center gap-2">
+                                                        <button
+                                                            class="w-8 h-8 rounded-full bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center transition-colors">
+                                                            <i class="fa-solid fa-cart-plus text-xs"></i>
+                                                        </button>
+                                                        <button
+                                                            class="w-8 h-8 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors">
+                                                            <i class="fa-solid fa-eye text-xs"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <% }); %>
+                                                <% } else { %>
+                                                    <tr>
+                                                        <td colspan="7" class="p-8 text-center text-gray-500">
+                                                            <div class="flex flex-col items-center gap-2">
+                                                                <i
+                                                                    class="fa-solid fa-box-open text-4xl text-gray-300"></i>
+                                                                <p>ไม่พบรายการสินค้า</p>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <% if (pagination.totalPages> 1) { %>
+                            <div class="p-4 border-t border-gray-100 flex items-center justify-between">
+                                <span class="text-sm text-gray-500">
+                                    แสดง <%= (pagination.page - 1) * pagination.limit + 1 %> ถึง <%=
+                                            Math.min(pagination.page * pagination.limit, pagination.totalItems) %> จาก
+                                            <%= pagination.totalItems %> รายการ
+                                </span>
+                                <div class="flex gap-1" id="pagination-controls">
+                                    <!-- Pagination Logic Here (Simplified) -->
+                                    <% if (pagination.page> 1) { %>
+                                        <a href="/admin/inventory?page=<%= pagination.page - 1 %>&search=<%= search %>&filter=<%= filter %>"
+                                            class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-500 hover:bg-gray-50 text-sm">
+                                            <i class="fa-solid fa-chevron-left"></i>
+                                        </a>
+                                        <% } %>
+
+                                            <span
+                                                class="w-8 h-8 flex items-center justify-center rounded bg-primary text-white text-sm">
+                                                <%= pagination.page %>
+                                            </span>
+
+                                            <% if (pagination.page < pagination.totalPages) { %>
+                                                <a href="/admin/inventory?page=<%= pagination.page + 1 %>&search=<%= search %>&filter=<%= filter %>"
+                                                    class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-500 hover:bg-gray-50 text-sm">
+                                                    <i class="fa-solid fa-chevron-right"></i>
+                                                </a>
+                                                <% } %>
+                                </div>
+                            </div>
+                            <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Item Modal -->
+            <div id="addItemModal"
+                class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-xl">
+                        <h3 class="text-lg font-bold text-gray-900">เพิ่มอะไหล่ใหม่</h3>
+                        <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fa-solid fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <form action="/admin/inventory/add" method="POST" enctype="multipart/form-data"
+                        class="p-6 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Image Upload -->
+                            <div class="md:col-span-2 flex justify-center mb-4">
+                                <div class="relative group cursor-pointer"
+                                    onclick="document.getElementById('imageInput').click()">
+                                    <div id="imagePreview"
+                                        class="w-32 h-32 rounded-lg bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
+                                        <div class="text-center text-gray-400 group-hover:text-primary">
+                                            <i class="fa-solid fa-camera text-2xl mb-1"></i>
+                                            <p class="text-xs">อัพโหลดรูปภาพ</p>
+                                        </div>
+                                        <img id="previewImg" class="absolute inset-0 w-full h-full object-cover hidden">
+                                    </div>
+                                    <input type="file" name="image" id="imageInput" class="hidden" accept="image/*"
+                                        onchange="previewImage(this)">
+                                </div>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-sm font-medium text-gray-700">ชื่ออะไหล่ <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" name="name" required
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-sm font-medium text-gray-700">รหัสสินค้า (SKU) <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" name="sku" required
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-sm font-medium text-gray-700">หมวดหมู่ <span
+                                        class="text-red-500">*</span></label>
+                                <select name="category" required
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white">
+                                    <option value="">เลือกหมวดหมู่</option>
+                                    <option value="น้ำมันเครื่อง">น้ำมันเครื่อง</option>
+                                    <option value="ช่วงล่าง">ช่วงล่าง</option>
+                                    <option value="ระบบเบรก">ระบบเบรก</option>
+                                    <option value="ไส้กรอง">ไส้กรอง</option>
+                                    <option value="เครื่องยนต์">เครื่องยนต์</option>
+                                    <option value="ภายนอก">ภายนอก</option>
+                                    <option value="แบตเตอรี่">แบตเตอรี่</option>
+                                    <option value="ของเหลว">ของเหลว</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-sm font-medium text-gray-700">ผู้จำหน่าย</label>
+                                <input type="text" name="supplier"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-sm font-medium text-gray-700">ราคาต้นทุน (บาท) <span
+                                        class="text-red-500">*</span></label>
+                                <input type="number" name="cost_price" required min="0" step="0.01"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-sm font-medium text-gray-700">ราคาขาย (บาท) <span
+                                        class="text-red-500">*</span></label>
+                                <input type="number" name="selling_price" required min="0" step="0.01"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-sm font-medium text-gray-700">จำนวนคงเหลือ <span
+                                        class="text-red-500">*</span></label>
+                                <input type="number" name="quantity" required min="0"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-sm font-medium text-gray-700">จุดสั่งซื้อขั้นต่ำ (Min) <span
+                                        class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <input type="number" name="min_quantity" required min="0" value="5"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary pl-10">
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                        <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">แจ้งเตือนเมื่อเหลือน้อยกว่านี้</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex justify-end gap-3 border-t border-gray-100 mt-6">
+                            <button type="button" onclick="closeAddModal()"
+                                class="px-6 py-2.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors font-medium">ยกเลิก</button>
+                            <button type="submit"
+                                class="px-6 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors font-medium shadow-sm hover:shadow-md flex items-center gap-2">
+                                <i class="fa-solid fa-save"></i>
+                                บันทึกข้อมูล
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <script>
+                function openAddModal() {
+                    document.getElementById('addItemModal').classList.remove('hidden');
+                }
+
+                function closeAddModal() {
+                    document.getElementById('addItemModal').classList.add('hidden');
+                }
+
+                function previewImage(input) {
+                    if (input.files && input.files[0]) {
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            const preview = document.getElementById('previewImg');
+                            preview.src = e.target.result;
+                            preview.classList.remove('hidden');
+                        }
+                        reader.readAsDataURL(input.files[0]);
+                    }
+                }
+
+                // Close modal when clicking outside
+                document.getElementById('addItemModal').addEventListener('click', function (e) {
+                    if (e.target === this) {
+                        closeAddModal();
+                    }
+                });
+            </script>
+    </body>
+
+</html>

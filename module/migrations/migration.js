@@ -1,4 +1,3 @@
-
 const { promisePool: sql } = require('../sql/mysql');
 
 async function runMigrations() {
@@ -14,6 +13,40 @@ async function runMigrations() {
         } else {
             console.log('Migration skipped: vin column already exists.');
         }
+
+        // 4. Create History Table
+        await sql.query(`
+            CREATE TABLE IF NOT EXISTS history (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                car_id INT NOT NULL,
+                service_type VARCHAR(100) NOT NULL,
+                service_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        `);
+        console.log('Migration: History table checked/created.');
+
+        // 5. Create Inventory Table
+        await sql.query(`
+            CREATE TABLE IF NOT EXISTS inventory (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                sku VARCHAR(50) UNIQUE NOT NULL,
+                category VARCHAR(50) NOT NULL,
+                quantity INT NOT NULL DEFAULT 0,
+                min_quantity INT NOT NULL DEFAULT 5,
+                cost_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                selling_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                supplier VARCHAR(100),
+                image_url TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        `);
+        console.log('Migration: Inventory table checked/created.');
+
+        console.log('All migrations completed successfully.');
 
     } catch (error) {
         console.error('Migration failed:', error);
