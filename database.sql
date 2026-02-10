@@ -28,8 +28,7 @@ CREATE TABLE IF NOT EXISTS `roles` (
 
 REPLACE INTO `roles` (`id`, `name`) VALUES
 	(1, 'user'),
-	(2, 'admin'),
-	(3, 'technical');
+	(2, 'admin');
 
 -- Dumping structure for table bt_auto.transactions
 CREATE TABLE IF NOT EXISTS `transactions` (
