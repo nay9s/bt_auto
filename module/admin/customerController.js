@@ -6,11 +6,16 @@ async function getCustomers(page = 1, limit = 10, search = '') {
 
     try {
         let params = [];
+        let searchWhere = "";
 
-        // Base Query Condition
-        let queryCondition = `
+        // Base Joins (Roles)
+        const baseJoins = `
             JOIN user_roles ur ON u.id = ur.user_id
             JOIN roles r ON ur.role_id = r.id
+        `;
+
+        // Base Where (Role Filtering)
+        const baseWhere = `
             WHERE r.name = 'user'
             AND u.id NOT IN (
                 SELECT ur_admin.user_id 
@@ -22,22 +27,26 @@ async function getCustomers(page = 1, limit = 10, search = '') {
 
         // Add Search Condition
         if (search) {
-            queryCondition += ` AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)`;
+            searchWhere = ` AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)`;
             const searchTerm = `%${search}%`;
             params = [searchTerm, searchTerm, searchTerm, searchTerm];
         }
 
-        // Count total customers with search filter
+        // Count total customers
+        // Count query only needs base joins + where + search
         const [countResult] = await sql.query(`
             SELECT COUNT(DISTINCT u.id) as total
             FROM users u
-            ${queryCondition}
+            ${baseJoins}
+            ${baseWhere}
+            ${searchWhere}
         `, params);
 
         const totalItems = countResult[0].total;
         const totalPages = Math.ceil(totalItems / limit);
 
         // Fetch customers with pagination and search
+        // Main query needs base joins + EXTRA joins (cars/work_orders) + where + search
         const [rows] = await sql.query(`
             SELECT 
                 u.id, 
@@ -49,9 +58,11 @@ async function getCustomers(page = 1, limit = 10, search = '') {
                 COALESCE(SUM(CASE WHEN wo.status = 'completed' THEN wo.cost ELSE 0 END), 0) AS totalSpent,
                 MAX(wo.appointment_date) AS lastVisit
             FROM users u
-            ${queryCondition}
+            ${baseJoins}
             LEFT JOIN cars c ON u.id = c.user_id
             LEFT JOIN work_orders wo ON c.id = wo.car_id
+            ${baseWhere}
+            ${searchWhere}
             GROUP BY u.id
             ORDER BY u.id DESC
             LIMIT ? OFFSET ?
@@ -87,9 +98,15 @@ async function getCustomers(page = 1, limit = 10, search = '') {
 
 async function exportCustomers(search = '') {
     try {
-        let queryCondition = `
+        let params = [];
+        let searchWhere = "";
+
+        const baseJoins = `
             JOIN user_roles ur ON u.id = ur.user_id
             JOIN roles r ON ur.role_id = r.id
+        `;
+
+        const baseWhere = `
             WHERE r.name = 'user'
             AND u.id NOT IN (
                 SELECT ur_admin.user_id 
@@ -99,9 +116,8 @@ async function exportCustomers(search = '') {
             )
         `;
 
-        let params = [];
         if (search) {
-            queryCondition += ` AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)`;
+            searchWhere = ` AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)`;
             const searchTerm = `%${search}%`;
             params = [searchTerm, searchTerm, searchTerm, searchTerm];
         }
@@ -116,9 +132,11 @@ async function exportCustomers(search = '') {
                 COALESCE(SUM(CASE WHEN wo.status = 'completed' THEN wo.cost ELSE 0 END), 0) AS totalSpent,
                 MAX(wo.appointment_date) AS lastVisit
             FROM users u
-            ${queryCondition}
+            ${baseJoins}
             LEFT JOIN cars c ON u.id = c.user_id
             LEFT JOIN work_orders wo ON c.id = wo.car_id
+            ${baseWhere}
+            ${searchWhere}
             GROUP BY u.id
             ORDER BY u.id DESC
         `, params);
@@ -144,7 +162,7 @@ async function exportCustomers(search = '') {
             csvRows.push(escapedValues.join(','));
         });
 
-        return csvRows.join('\n'); // Add BOM if needed for Excel: '\ufeff' + ...
+        return csvRows.join('\n');
 
     } catch (error) {
         throw error;
@@ -157,7 +175,6 @@ async function addCustomer({ firstName, lastName, phone, email }) {
     }
 
     try {
-        // Check if user exists
         const [existing] = await sql.query(
             'SELECT id FROM users WHERE username = ? OR email = ? OR phone = ?',
             [phone, email || '', phone]
@@ -167,21 +184,14 @@ async function addCustomer({ firstName, lastName, phone, email }) {
             return { success: false, error: 'ผู้ใช้นี้ (เบอร์โทรหรืออีเมล) มีอยู่ในระบบแล้ว' };
         }
 
-        // Hash password (use phone number as default password)
         const passwordHash = await bcrypt.hash(phone, 10);
-
-        // Use phone as username if email is not provided or just use phone as username standard
         const username = phone;
-
-        // Insert User
         const [result] = await sql.query(
             'INSERT INTO users (username, password_hash, email, first_name, last_name, phone) VALUES (?, ?, ?, ?, ?, ?)',
             [username, passwordHash, email || null, firstName, lastName, phone]
         );
 
         const userId = result.insertId;
-
-        // Assign 'user' role (role_id = 1)
         await sql.query(
             'INSERT INTO user_roles (user_id, role_id) VALUES (?, (SELECT id FROM roles WHERE name = "user"))',
             [userId]
@@ -195,4 +205,57 @@ async function addCustomer({ firstName, lastName, phone, email }) {
     }
 }
 
-module.exports = { getCustomers, addCustomer, exportCustomers };
+async function getCustomerById(id) {
+    try {
+        const [rows] = await sql.query(`
+            SELECT id, first_name, last_name, email, phone
+            FROM users
+            WHERE id = ?
+        `, [id]);
+
+        if (rows.length === 0) return null;
+
+        const user = rows[0];
+        return {
+            id: user.id,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            email: user.email,
+            phone: user.phone
+        };
+    } catch (error) {
+        console.error('Error getting customer by ID:', error);
+        return null;
+    }
+}
+
+async function editCustomer(id, { firstName, lastName, phone, email }) {
+    if (!id || !firstName || !lastName || !phone) {
+        return { success: false, error: 'กรุณากรอกข้อมูลให้ครบ' };
+    }
+
+    try {
+        // Check for duplicate phone/email (excluding self)
+        const [existing] = await sql.query(
+            'SELECT id FROM users WHERE (phone = ? OR email = ?) AND id != ?',
+            [phone, email || '', id]
+        );
+
+        if (existing.length > 0) {
+            return { success: false, error: 'เบอร์โทรหรืออีเมลนี้มีผู้ใช้อื่นใช้งานแล้ว' };
+        }
+
+        // Update user
+        await sql.query(
+            'UPDATE users SET first_name=?, last_name=?, phone=?, email=?, username=? WHERE id=?',
+            [firstName, lastName, phone, email || null, phone, id]
+        );
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error editing customer:', error);
+        return { success: false, error: 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์' };
+    }
+}
+
+module.exports = { getCustomers, addCustomer, exportCustomers, getCustomerById, editCustomer };

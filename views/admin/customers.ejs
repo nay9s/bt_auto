@@ -42,7 +42,7 @@
                             <h2 class="text-2xl font-bold text-gray-800">ลูกค้า</h2>
                             <p class="text-sm text-gray-500">จัดการฐานข้อมูลลูกค้า</p>
                         </div>
-                        <button onclick="toggleAddModal()"
+                        <button onclick="openAddModal()"
                             class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg shadow-sm flex items-center justify-center gap-2 transition-colors text-sm font-medium">
                             <i class="fa-solid fa-plus"></i> เพิ่มลูกค้าใหม่
                         </button>
@@ -103,6 +103,9 @@
                                         <th
                                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             เข้าบริการล่าสุด</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            จัดการ</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
@@ -133,11 +136,17 @@
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     <%= customer.lastVisit %>
                                                 </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <button onclick="openEditModal('<%= customer.id %>')"
+                                                        class="text-primary hover:text-primary-dark mr-3 transition-colors">
+                                                        <i class="fa-solid fa-pen-to-square"></i> แก้ไข
+                                                    </button>
+                                                </td>
                                             </tr>
                                             <% }) %>
                                                 <% } else { %>
                                                     <tr>
-                                                        <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                                                        <td colspan="7" class="px-6 py-10 text-center text-gray-500">
                                                             <i
                                                                 class="fa-solid fa-users-slash text-4xl mb-3 text-gray-300 block"></i>
                                                             ไม่พบข้อมูลลูกค้า
@@ -201,30 +210,30 @@
                 </main>
             </div>
 
-            <!-- Add Customer Modal -->
-            <div id="addCustomerModal"
+            <!-- Customer Modal (Shared for Add/Edit) -->
+            <div id="customerModal"
                 class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
                 <div class="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0"
                     id="modalContent">
                     <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="text-lg font-bold text-gray-800">เพิ่มลูกค้าใหม่</h3>
-                        <button onclick="toggleAddModal()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                        <h3 class="text-lg font-bold text-gray-800" id="modalTitle">เพิ่มลูกค้าใหม่</h3>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
                             <i class="fa-solid fa-times text-xl"></i>
                         </button>
                     </div>
 
-                    <form action="/admin/customers/add" method="POST" class="p-6 space-y-4">
+                    <form id="customerForm" action="/admin/customers/add" method="POST" class="p-6 space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อจริง <span
                                         class="text-red-500">*</span></label>
-                                <input type="text" name="firstName" required
+                                <input type="text" name="firstName" id="firstName" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">นามสกุล <span
                                         class="text-red-500">*</span></label>
-                                <input type="text" name="lastName" required
+                                <input type="text" name="lastName" id="lastName" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm">
                             </div>
                         </div>
@@ -232,7 +241,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">เบอร์โทรศัพท์ <span
                                     class="text-red-500">*</span></label>
-                            <input type="tel" name="phone" required
+                            <input type="tel" name="phone" id="phone" required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
                                 placeholder="08xxxxxxxx">
                             <p class="text-xs text-gray-500 mt-1">* ใช้เป็นชื่อผู้ใช้และรหัสผ่านเริ่มต้น</p>
@@ -240,12 +249,12 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">อีเมล (ถ้ามี)</label>
-                            <input type="email" name="email"
+                            <input type="email" name="email" id="email"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm">
                         </div>
 
                         <div class="pt-4 flex justify-end gap-3">
-                            <button type="button" onclick="toggleAddModal()"
+                            <button type="button" onclick="closeModal()"
                                 class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium">ยกเลิก</button>
                             <button type="submit"
                                 class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium shadow-sm transition-colors">บันทึกข้อมูล</button>
@@ -255,24 +264,53 @@
             </div>
 
             <script>
-                function toggleAddModal() {
-                    const modal = document.getElementById('addCustomerModal');
-                    const content = document.getElementById('modalContent');
+                const modal = document.getElementById('customerModal');
+                const content = document.getElementById('modalContent');
+                const form = document.getElementById('customerForm');
+                const modalTitle = document.getElementById('modalTitle');
 
-                    if (modal.classList.contains('hidden')) {
-                        modal.classList.remove('hidden');
-                        // Small delay to allow display:block to apply before opacity transition
-                        setTimeout(() => {
-                            content.classList.remove('scale-95', 'opacity-0');
-                            content.classList.add('scale-100', 'opacity-100');
-                        }, 10);
-                    } else {
-                        content.classList.remove('scale-100', 'opacity-100');
-                        content.classList.add('scale-95', 'opacity-0');
-                        setTimeout(() => {
-                            modal.classList.add('hidden');
-                        }, 300);
+                function openAddModal() {
+                    form.reset();
+                    form.action = '/admin/customers/add';
+                    modalTitle.textContent = 'เพิ่มลูกค้าใหม่';
+                    showModal();
+                }
+
+                async function openEditModal(id) {
+                    try {
+                        const response = await fetch(`/admin/api/customers/${id}`);
+                        if (!response.ok) throw new Error('Failed to fetch customer details');
+                        const customer = await response.json();
+
+                        form.action = `/admin/customers/edit/${id}`;
+                        modalTitle.textContent = 'แก้ไขข้อมูลลูกค้า';
+
+                        document.getElementById('firstName').value = customer.firstName;
+                        document.getElementById('lastName').value = customer.lastName;
+                        document.getElementById('phone').value = customer.phone;
+                        document.getElementById('email').value = customer.email || '';
+
+                        showModal();
+                    } catch (error) {
+                        console.error('Error opening edit modal:', error);
+                        alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
                     }
+                }
+
+                function showModal() {
+                    modal.classList.remove('hidden');
+                    setTimeout(() => {
+                        content.classList.remove('scale-95', 'opacity-0');
+                        content.classList.add('scale-100', 'opacity-100');
+                    }, 10);
+                }
+
+                function closeModal() {
+                    content.classList.remove('scale-100', 'opacity-100');
+                    content.classList.add('scale-95', 'opacity-0');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                    }, 300);
                 }
 
                 // Check for error in URL
@@ -281,7 +319,6 @@
                 if (error) {
                     document.getElementById('errorAlert').classList.remove('hidden');
                     document.getElementById('errorMessage').textContent = decodeURIComponent(error);
-                    // Clean URL
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
             </script>

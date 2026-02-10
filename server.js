@@ -215,16 +215,62 @@ app.get('/logout', logout)
 
 // ==============  ADMIN  =============== //
 const { requireAdmin } = require('./module/auth/requireAdmin')
-const { getCustomers, addCustomer, exportCustomers } = require('./module/admin/customerController')
+const { getCustomers, addCustomer, exportCustomers, getCustomerById, editCustomer } = require('./module/admin/customerController')
+const { getCars, addCar, searchOwners, getCarById, editCar, exportCars } = require('./module/admin/carController')
+const { runMigrations } = require('./module/migrations/migration')
+const multer = require('multer')
+const fs = require('fs')
 
+// Configure Multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = './public/uploads/cars';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir)
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)) // Append extension
+  }
+})
+const upload = multer({ storage: storage })
+
+// --- API --- //
+app.get('/admin/api/owners', requireAuth, requireAdmin, async (req, res) => {
+  const results = await searchOwners(req.query.q);
+  res.json(results);
+});
+
+app.get('/admin/api/cars/:id', requireAuth, requireAdmin, async (req, res) => {
+  const car = await getCarById(req.params.id);
+  if (car) res.json(car);
+  else res.status(404).send('Car not found');
+});
+
+app.get('/admin/api/customers/:id', requireAuth, requireAdmin, async (req, res) => {
+  const customer = await getCustomerById(req.params.id);
+  if (customer) res.json(customer);
+  else res.status(404).send('Customer not found');
+});
+
+// --- CUSTOMERS --- //
 app.post('/admin/customers/add', requireAuth, requireAdmin, async (req, res) => {
   const result = await addCustomer(req.body);
   if (result.success) {
     res.redirect('/admin/customers');
   } else {
-    // In a real app, you'd flash this error or send it back to the view
-    // For now, simpler handling or query param error
     console.log('Error adding customer:', result.error);
+    res.redirect('/admin/customers?error=' + encodeURIComponent(result.error));
+  }
+})
+
+app.post('/admin/customers/edit/:id', requireAuth, requireAdmin, async (req, res) => {
+  const result = await editCustomer(req.params.id, req.body);
+  if (result.success) {
+    res.redirect('/admin/customers');
+  } else {
+    console.log('Error editing customer:', result.error);
     res.redirect('/admin/customers?error=' + encodeURIComponent(result.error));
   }
 })
@@ -276,7 +322,73 @@ app.get('/admin/customers', requireAuth, requireAdmin, async (req, res) => {
   }
 })
 
+// --- CARS --- //
+app.get('/admin/cars/export', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const search = req.query.search || '';
+    const csvData = await exportCars(search);
+
+    const bom = '\ufeff';
+    const csvContent = bom + csvData;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=cars.csv');
+    res.send(csvContent);
+  } catch (error) {
+    console.error('Error exporting cars:', error);
+    res.status(500).send('เกิดข้อผิดพลาดในการส่งออกข้อมูล');
+  }
+})
+
+app.get('/admin/cars', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const search = req.query.search || '';
+    const status = req.query.status || '';
+
+    const data = await getCars(page, limit, search, status);
+
+    const userSession = req.session.user;
+    const userView = {
+      ...userSession,
+      firstName: userSession.first_name || userSession.firstName,
+      lastName: userSession.last_name || userSession.lastName,
+      roles: userSession.role || userSession.roles
+    };
+
+    res.render('admin/cars', {
+      user: userView,
+      path: '/admin/cars',
+      cars: data.cars,
+      pagination: data.pagination
+    });
+  } catch (error) {
+    console.error('Error fetching cars:', error);
+    res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูลรถยนต์');
+  }
+})
+
+app.post('/admin/cars/add', requireAuth, requireAdmin, upload.single('image'), async (req, res) => {
+  const result = await addCar(req.body, req.file);
+  if (result.success) {
+    res.redirect('/admin/cars');
+  } else {
+    res.redirect('/admin/cars?error=' + encodeURIComponent(result.error));
+  }
+})
+
+app.post('/admin/cars/edit/:id', requireAuth, requireAdmin, upload.single('image'), async (req, res) => {
+  const result = await editCar(req.params.id, req.body, req.file);
+  if (result.success) {
+    res.redirect('/admin/cars');
+  } else {
+    res.redirect('/admin/cars?error=' + encodeURIComponent(result.error));
+  }
+})
+
 // ============== PORT =============== //
-app.listen(port, '0.0.0.0', () => {
+app.listen(port, '0.0.0.0', async () => {
   console.log(`This server running on port : ${port} \nRunning http://localhost:${port}`)
+  await runMigrations();
 })

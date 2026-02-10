@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<%- include('partials/head') %>
+
+    <body class="bg-gray-50 text-gray-800 font-kanit">
+
+        <%- include('partials/sidebar', { path: '/admin/cars' }) %>
+
+            <!-- Main Content -->
+            <div class="lg:ml-64 min-h-screen flex flex-col transition-all duration-300">
+
+                <!-- Top Header -->
+                <header
+                    class="bg-white shadow-sm h-16 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-10">
+                    <div class="flex items-center gap-4">
+                        <button onclick="toggleSidebar()"
+                            class="lg:hidden text-gray-500 hover:text-primary focus:outline-none">
+                            <i class="fa-solid fa-bars text-xl"></i>
+                        </button>
+                        <div class="text-xl font-bold text-gray-700 lg:hidden">รถยนต์</div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="text-right hidden sm:block">
+                            <div class="text-sm font-semibold text-gray-700">
+                                <%= user.firstName %>
+                                    <%= user.lastName %>
+                            </div>
+                            <div class="text-xs text-gray-500">เจ้าของอู่</div>
+                        </div>
+                        <img src="https://ui-avatars.com/api/?name=<%= user.firstName %>+<%= user.lastName %>&background=009933&color=fff"
+                            alt="Admin" class="w-9 h-9 rounded-full object-cover border border-gray-200">
+                    </div>
+                </header>
+
+                <!-- Page Content -->
+                <main class="flex-1 p-4 lg:p-8">
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">รายการรถยนต์</h2>
+                            <p class="text-sm text-gray-500">จัดการรถยนต์ทั้งหมดในอู่ แสดงสถานะและรายละเอียด</p>
+                        </div>
+                        <button onclick="openAddModal()"
+                            class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg shadow-sm flex items-center justify-center gap-2 transition-colors text-sm font-medium">
+                            <i class="fa-solid fa-plus"></i> เพิ่มรถยนต์
+                        </button>
+                    </div>
+
+                    <!-- Error Alert -->
+                    <div id="errorAlert"
+                        class="hidden mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                        role="alert">
+                        <span class="block sm:inline" id="errorMessage"></span>
+                        <span class="absolute top-0 bottom-0 right-0 px-4 py-3"
+                            onclick="this.parentElement.style.display='none'">
+                            <i class="fa-solid fa-times"></i>
+                        </span>
+                    </div>
+
+                    <!-- Filters & Search -->
+                    <div
+                        class="bg-white rounded-t-xl shadow-sm border-b border-gray-100 p-4 flex flex-col sm:flex-row gap-3">
+                        <form action="/admin/cars" method="GET" class="relative flex-1 flex gap-2">
+                            <div class="relative flex-1">
+                                <i
+                                    class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" name="search" value="<%= pagination.search %>"
+                                    placeholder="ค้นหารถยนต์ (ทะเบียน, ยี่ห้อ, เจ้าของ)..."
+                                    class="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm">
+                            </div>
+                            <select name="status" onchange="this.form.submit()"
+                                class="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-primary">
+                                <option value="" <%=pagination.status==='' ? 'selected' : '' %>>ทั้งหมด</option>
+                                <option value="ready" <%=pagination.status==='ready' ? 'selected' : '' %>>พร้อมใช้งาน
+                                </option>
+                                <option value="not_ready" <%=pagination.status==='not_ready' ? 'selected' : '' %>
+                                    >ไม่พร้อมใช้งาน</option>
+                            </select>
+                        </form>
+                        <div class="flex gap-2">
+                            <button
+                                class="px-3 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-sliders"></i> <span class="hidden sm:inline">ตัวกรอง</span>
+                            </button>
+                            <a href="/admin/cars/export?search=<%= pagination.search %>"
+                                class="px-3 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-external-link-alt"></i> <span
+                                    class="hidden sm:inline">ส่งออก</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="bg-white rounded-b-xl shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-[1000px]">
+                                <thead class="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            ยี่ห้อ & รุ่น</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            ปี</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            ทะเบียนรถ</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            VIN</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            เจ้าของ</th>
+                                        <th
+                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            สถานะ</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <% if (cars.length> 0) { %>
+                                        <% cars.forEach(car=> { %>
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div
+                                                            class="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border border-gray-200">
+                                                            <% if (car.imageUrl) { %>
+                                                                <img src="<%= car.imageUrl %>"
+                                                                    class="h-full w-full object-cover" alt="Car">
+                                                                <% } else { %>
+                                                                    <i class="fa-solid fa-car text-blue-300"></i>
+                                                                    <% } %>
+                                                        </div>
+                                                        <div class="ml-4">
+                                                            <div class="text-sm font-medium text-gray-900">
+                                                                <%= car.brand %>
+                                                                    <%= car.model %>
+                                                            </div>
+                                                            <div class="text-xs text-gray-500">แก้ไขล่าสุด: <%=
+                                                                    car.lastVisit %>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <%= car.year %>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span
+                                                        class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded border border-gray-300">
+                                                        <%= car.plate %>
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                                                    <%= car.vin %>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    <%= car.ownerName %>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                    <span
+                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= car.status.class %>">
+                                                        <%= car.status.text %>
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <button onclick="openEditModal('<%= car.id %>')"
+                                                        class="text-primary hover:text-primary-dark mr-3 transition-colors">
+                                                        <i class="fa-solid fa-pen-to-square"></i> แก้ไข
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                                <% } else { %>
+                                                    <tr>
+                                                        <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+                                                            <i
+                                                                class="fa-solid fa-car-side text-4xl mb-3 text-gray-300 block"></i>
+                                                            ไม่พบข้อมูลรถยนต์
+                                                        </td>
+                                                    </tr>
+                                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div
+                            class="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div class="text-sm text-gray-500">
+                                แสดง <span class="font-medium text-gray-900">
+                                    <%= (pagination.page - 1) * pagination.limit + 1 %>
+                                </span>
+                                ถึง <span class="font-medium text-gray-900">
+                                    <%= Math.min(pagination.page * pagination.limit, pagination.totalItems) %>
+                                </span>
+                                จาก <span class="font-medium text-gray-900">
+                                    <%= pagination.totalItems %>
+                                </span> รายการ
+                            </div>
+
+                            <div class="flex items-center gap-1">
+                                <% if (pagination.page> 1) { %>
+                                    <a href="/admin/cars?page=<%= pagination.page - 1 %>&search=<%= pagination.search %>"
+                                        class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700">
+                                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                                    </a>
+                                    <% } else { %>
+                                        <span
+                                            class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed">
+                                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                                        </span>
+                                        <% } %>
+
+                                            <% for(let i=1; i <=pagination.totalPages; i++) { %>
+                                                <a href="/admin/cars?page=<%= i %>&search=<%= pagination.search %>"
+                                                    class="w-8 h-8 flex items-center justify-center rounded border <%= pagination.page === i ? 'border-primary bg-primary text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50' %> text-sm font-medium transition-colors">
+                                                    <%= i %>
+                                                </a>
+                                                <% } %>
+
+                                                    <% if (pagination.page < pagination.totalPages) { %>
+                                                        <a href="/admin/cars?page=<%= pagination.page + 1 %>&search=<%= pagination.search %>"
+                                                            class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700">
+                                                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                                                        </a>
+                                                        <% } else { %>
+                                                            <span
+                                                                class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed">
+                                                                <i class="fa-solid fa-chevron-right text-xs"></i>
+                                                            </span>
+                                                            <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                </main>
+            </div>
+
+            <!-- Car Modal (Shared for Add/Edit) -->
+            <div id="carModal"
+                class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl shadow-lg w-full max-w-lg overflow-hidden transform transition-all scale-95 opacity-0"
+                    id="modalContent">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-gray-800" id="modalTitle">เพิ่มรถยนต์ใหม่</h3>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                            <i class="fa-solid fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <form id="carForm" action="/admin/cars/add" method="POST" enctype="multipart/form-data"
+                        class="p-6 space-y-4">
+                        <!-- Brand & Model -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ยี่ห้อ (Brand) <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" name="brand" id="brand" required placeholder="Toyota"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">รุ่น (Model) <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" name="model" id="model" required placeholder="Camry"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm">
+                            </div>
+                        </div>
+
+                        <!-- Year & Plate -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ปีที่ผลิต (Year) <span
+                                        class="text-red-500">*</span></label>
+                                <input type="number" name="year" id="year" required placeholder="2023" min="1900"
+                                    max="2100"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ทะเบียนรถ <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" name="licensePlate" id="licensePlate" required placeholder="กข 1234"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm">
+                            </div>
+                        </div>
+
+                        <!-- VIN -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">เลขตัวถัง (VIN)</label>
+                            <input type="text" name="vin" id="vin" placeholder="1HG..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm uppercase">
+                        </div>
+
+                        <!-- Image Upload -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">รูปภาพรถยนต์</label>
+                            <div class="mt-1 flex items-center">
+                                <span
+                                    class="inline-block h-12 w-12 rounded-lg overflow-hidden bg-gray-100 border border-gray-200"
+                                    id="previewContainer">
+                                    <i
+                                        class="fa-solid fa-image text-gray-400 h-full w-full flex items-center justify-center"></i>
+                                </span>
+                                <label for="imageUpload"
+                                    class="ml-5 bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none cursor-pointer">
+                                    <span>อัปโหลด</span>
+                                    <input id="imageUpload" name="image" type="file" class="sr-only" accept="image/*"
+                                        onchange="previewImage(this)">
+                                </label>
+                                <span class="ml-3 text-xs text-gray-500" id="fileName">ยังไม่ได้เลือกไฟล์</span>
+                            </div>
+                        </div>
+
+                        <!-- Owner Search -->
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">เจ้าของรถ <span
+                                    class="text-red-500">*</span></label>
+                            <input type="hidden" name="userId" id="selectedUserId" required>
+                            <div class="relative">
+                                <input type="text" id="ownerSearchInput" placeholder="ค้นหาชื่อเจ้าของรถหรือเบอร์โทร..."
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
+                                    autocomplete="off">
+                                <i
+                                    class="fa-solid fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                            <!-- Dropdown Results -->
+                            <div id="ownerSearchResults"
+                                class="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto hidden">
+                                <!-- Results will be injected here -->
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex justify-end gap-3">
+                            <button type="button" onclick="closeModal()"
+                                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium">ยกเลิก</button>
+                            <button type="submit"
+                                class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium shadow-sm transition-colors">บันทึกข้อมูล</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <script>
+                const modal = document.getElementById('carModal');
+                const content = document.getElementById('modalContent');
+                const form = document.getElementById('carForm');
+                const modalTitle = document.getElementById('modalTitle');
+
+                function openAddModal() {
+                    form.reset();
+                    form.action = '/admin/cars/add';
+                    modalTitle.textContent = 'เพิ่มรถยนต์ใหม่';
+                    document.getElementById('selectedUserId').value = '';
+                    document.getElementById('fileName').textContent = 'ยังไม่ได้เลือกไฟล์';
+                    document.getElementById('previewContainer').innerHTML = '<i class="fa-solid fa-image text-gray-400 h-full w-full flex items-center justify-center"></i>';
+
+                    showModal();
+                }
+
+                async function openEditModal(id) {
+                    try {
+                        const response = await fetch(`/admin/api/cars/${id}`);
+                        if (!response.ok) throw new Error('Failed to fetch car details');
+                        const car = await response.json();
+
+                        // Populate form
+                        form.action = `/admin/cars/edit/${id}`;
+                        modalTitle.textContent = 'แก้ไขข้อมูลรถยนต์';
+
+                        document.getElementById('brand').value = car.brand;
+                        document.getElementById('model').value = car.model;
+                        document.getElementById('year').value = car.year;
+                        document.getElementById('licensePlate').value = car.licensePlate;
+                        document.getElementById('vin').value = car.vin || '';
+                        document.getElementById('selectedUserId').value = car.userId;
+                        document.getElementById('ownerSearchInput').value = `${car.ownerName} (${car.ownerPhone})`;
+
+                        // Image Preview
+                        if (car.imageUrl) {
+                            document.getElementById('previewContainer').innerHTML = `<img src="${car.imageUrl}" class="h-full w-full object-cover">`;
+                            document.getElementById('fileName').textContent = 'ใช้รูปภาพเดิม (เลือกใหม่เพื่อเปลี่ยน)';
+                        } else {
+                            document.getElementById('fileName').textContent = 'ไม่มีรูปภาพ';
+                            document.getElementById('previewContainer').innerHTML = '<i class="fa-solid fa-image text-gray-400 h-full w-full flex items-center justify-center"></i>';
+                        }
+
+                        showModal();
+
+                    } catch (error) {
+                        console.error('Error opening edit modal:', error);
+                        alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+                    }
+                }
+
+                function showModal() {
+                    modal.classList.remove('hidden');
+                    setTimeout(() => {
+                        content.classList.remove('scale-95', 'opacity-0');
+                        content.classList.add('scale-100', 'opacity-100');
+                    }, 10);
+                }
+
+                function closeModal() {
+                    content.classList.remove('scale-100', 'opacity-100');
+                    content.classList.add('scale-95', 'opacity-0');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                    }, 300);
+                }
+
+                function previewImage(input) {
+                    if (input.files && input.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            document.getElementById('previewContainer').innerHTML = `<img src="${e.target.result}" class="h-full w-full object-cover">`;
+                            document.getElementById('fileName').textContent = input.files[0].name;
+                        }
+                        reader.readAsDataURL(input.files[0]);
+                    }
+                }
+
+                // Owner Search Logic
+                const searchInput = document.getElementById('ownerSearchInput');
+                const searchResults = document.getElementById('ownerSearchResults');
+                const selectedUserIdInfo = document.getElementById('selectedUserId');
+                let timeoutId;
+
+                searchInput.addEventListener('input', (e) => {
+                    const query = e.target.value;
+                    if (query.length < 2) {
+                        searchResults.classList.add('hidden');
+                        return;
+                    }
+
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(async () => {
+                        try {
+                            const response = await fetch(`/admin/api/owners?q=${encodeURIComponent(query)}`);
+                            const users = await response.json();
+
+                            searchResults.innerHTML = '';
+                            if (users.length > 0) {
+                                users.forEach(user => {
+                                    const div = document.createElement('div');
+                                    div.className = 'px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm border-b border-gray-50 last:border-0';
+                                    div.innerHTML = `<span class="font-medium text-gray-800">${user.name}</span> <span class="text-gray-500 text-xs">(${user.phone})</span>`;
+                                    div.onclick = () => {
+                                        searchInput.value = `${user.name}`;
+                                        selectedUserIdInfo.value = user.id;
+                                        searchResults.classList.add('hidden');
+                                        searchInput.classList.add('border-green-500', 'bg-green-50'); // Valid indication
+                                    };
+                                    searchResults.appendChild(div);
+                                });
+                                searchResults.classList.remove('hidden');
+                            } else {
+                                searchResults.innerHTML = '<div class="px-4 py-2 text-sm text-gray-500 text-center">ไม่พบชื่อผู้ใช้งาน</div>';
+                                searchResults.classList.remove('hidden');
+                            }
+                        } catch (error) {
+                            console.error('Search error:', error);
+                        }
+                    }, 300);
+                });
+
+                // Close search when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                        searchResults.classList.add('hidden');
+                    }
+                });
+
+                // Check for error in URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const error = urlParams.get('error');
+                if (error) {
+                    document.getElementById('errorAlert').classList.remove('hidden');
+                    document.getElementById('errorMessage').textContent = decodeURIComponent(error);
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            </script>
+
+    </body>
+
+</html>
