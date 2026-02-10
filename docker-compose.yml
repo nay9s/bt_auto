@@ -21,6 +21,7 @@ services:
 
   web:
     build: .
+    platform: linux/amd64
     container_name: bt_auto
     command: npx nodemon -L server.js
     ports:

@@ -1,7 +1,22 @@
 const { promisePool: sql } = require('../sql/mysql');
 
+async function waitForDatabase(retries = 30, delay = 2000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            await sql.query('SELECT 1');
+            console.log('Database connected successfully.');
+            return;
+        } catch (err) {
+            console.log(`Database not ready, retrying in ${delay / 1000}s... (${i + 1}/${retries})`);
+            await new Promise(res => setTimeout(res, delay));
+        }
+    }
+    throw new Error('Database connection failed after multiple retries.');
+}
+
 async function runMigrations() {
     try {
+        await waitForDatabase();
         console.log('Checking for database migrations...');
 
         // Check for 'vin' column in 'cars' table
