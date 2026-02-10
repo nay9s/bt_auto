@@ -60,7 +60,7 @@ async function getDashboardStats() {
             SELECT wo.id, c.license_plate, c.brand, c.model, wo.status
             FROM work_orders wo
             JOIN cars c ON wo.car_id = c.id
-            WHERE wo.status = 'ready_for_pickup'
+            WHERE (wo.status = 'ready_for_pickup' OR DATE(wo.appointment_date) = ?)
             AND wo.status != 'canceled'
             LIMIT 5
         `, [today]);
