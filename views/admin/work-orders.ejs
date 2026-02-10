@@ -236,16 +236,17 @@
                                 <div class="space-y-1">
                                     <label class="text-sm font-medium text-gray-700">ลูกค้า <span
                                             class="text-red-500">*</span></label>
-                                    <select name="user_id" id="userSelect" required onchange="loadUserCars()"
-                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white">
-                                        <option value="">เลือกลูกค้า</option>
-                                        <% users.forEach(u=> { %>
-                                            <option value="<%= u.id %>">
-                                                <%= u.first_name %>
-                                                    <%= u.last_name %> (<%= u.phone %>)
-                                            </option>
-                                            <% }); %>
-                                    </select>
+                                    <div class="relative">
+                                        <input type="hidden" name="user_id" id="userIdInput" required>
+                                        <input type="text" id="userSearchInput"
+                                            placeholder="ค้นหาชื่อ หรือ เบอร์โทรศัพท์..."
+                                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                                            autocomplete="off" oninput="searchUsers(this.value)">
+                                        <div id="userSearchResults"
+                                            class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                                            <!-- Results will appear here -->
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="space-y-1">
                                     <label class="text-sm font-medium text-gray-700">รถยนต์ <span
@@ -278,6 +279,10 @@
                                         class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white">
                                         <option value="pending">รอดำเนินการ</option>
                                         <option value="checking">กำลังตรวจเช็ค</option>
+                                        <option value="waiting_parts">รออะไหล่</option>
+                                        <option value="repairing">กำลังซ่อมแซม</option>
+                                        <option value="ready_for_pickup">รอรับรถ</option>
+                                        <option value="completed">ซ่อมเสร็จสิ้น (ปิดงาน)</option>
                                     </select>
                                 </div>
                                 <div class="md:col-span-3 space-y-1">
@@ -369,11 +374,60 @@
 
                 function closeCreateModal() {
                     document.getElementById('createModal').classList.add('hidden');
+                    document.getElementById('userSearchResults').classList.add('hidden');
+                }
+
+                // --- User Search Logic ---
+                let searchTimeout;
+                async function searchUsers(query) {
+                    const resultsDiv = document.getElementById('userSearchResults');
+                    const userIdInput = document.getElementById('userIdInput');
+
+                    // Clear previous selection if user types again
+                    // userIdInput.value = ''; 
+                    // Don't clear immediately, allows for correction. But if they submit with invalid text, validation handles it (required field).
+
+                    if (query.length < 2) {
+                        resultsDiv.classList.add('hidden');
+                        return;
+                    }
+
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(async () => {
+                        try {
+                            const response = await fetch(`/admin/api/owners?q=${encodeURIComponent(query)}`);
+                            const users = await response.json();
+
+                            resultsDiv.innerHTML = '';
+                            if (users.length > 0) {
+                                users.forEach(user => {
+                                    const div = document.createElement('div');
+                                    div.className = 'px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700';
+                                    div.innerText = `${user.name} (${user.phone})`;
+                                    div.onclick = () => selectUser(user);
+                                    resultsDiv.appendChild(div);
+                                });
+                                resultsDiv.classList.remove('hidden');
+                            } else {
+                                resultsDiv.innerHTML = '<div class="px-4 py-2 text-sm text-gray-500">ไม่พบข้อมูล</div>';
+                                resultsDiv.classList.remove('hidden');
+                            }
+                        } catch (error) {
+                            console.error('Search error:', error);
+                        }
+                    }, 300); // Debounce
+                }
+
+                function selectUser(user) {
+                    document.getElementById('userIdInput').value = user.id;
+                    document.getElementById('userSearchInput').value = `${user.name} (${user.phone})`;
+                    document.getElementById('userSearchResults').classList.add('hidden');
+                    loadUserCars();
                 }
 
                 // --- Car Loading Logic ---
                 async function loadUserCars() {
-                    const userId = document.getElementById('userSelect').value;
+                    const userId = document.getElementById('userIdInput').value;
                     const carSelect = document.getElementById('carSelect');
 
                     carSelect.innerHTML = '<option value="">กำลังโหลด...</option>';
@@ -537,7 +591,7 @@
                 function submitForm() {
                     const items = [];
                     // Validate Form
-                    if (!document.getElementById('userSelect').value) { alert('กรุณาเลือกลูกค้า'); return; }
+                    if (!document.getElementById('userIdInput').value) { alert('กรุณาเลือกลูกค้า'); return; }
                     if (!document.getElementById('carSelect').value) { alert('กรุณาเลือกรถยนต์'); return; }
                     if (!document.querySelector('input[name="service_type"]').value) { alert('กรุณาระบุชื่องานซ่อม'); return; }
 
@@ -586,8 +640,9 @@
 
                         // 2. Fill Basic Fields
                         // Set User and wait for cars to load
-                        const userSelect = document.getElementById('userSelect');
-                        userSelect.value = data.user_id;
+                        document.getElementById('userIdInput').value = data.user_id;
+                        document.getElementById('userSearchInput').value = `${data.first_name} ${data.last_name} (${data.phone})`;
+
                         await loadUserCars(); // This fetches cars for the selected user
 
                         // Set Car
@@ -658,6 +713,11 @@
                         const form = document.getElementById('createForm');
                         form.action = "/admin/work-orders/create";
                         form.reset();
+
+                        // Clear Search Inputs specifically
+                        document.getElementById('userIdInput').value = '';
+                        document.getElementById('userSearchInput').value = '';
+                        document.getElementById('userSearchResults').classList.add('hidden');
 
                         // Reset Car Select
                         const carSelect = document.getElementById('carSelect');

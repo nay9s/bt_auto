@@ -270,4 +270,30 @@ async function exportCars(search = '') {
     }
 }
 
-module.exports = { getCars, getCarById, addCar, editCar, searchOwners, exportCars };
+async function deleteCar(id) {
+    if (!id) return { success: false, error: 'ไม่พบ ID รถยนต์' };
+
+    try {
+        // 1. Get Work Order IDs
+        const [workOrders] = await sql.query('SELECT id FROM work_orders WHERE car_id = ?', [id]);
+        const workOrderIds = workOrders.map(wo => wo.id);
+
+        if (workOrderIds.length > 0) {
+            // 2. Delete Work Order Items
+            await sql.query('DELETE FROM work_order_items WHERE work_order_id IN (?)', [workOrderIds]);
+
+            // 3. Delete Work Orders
+            await sql.query('DELETE FROM work_orders WHERE car_id = ?', [id]);
+        }
+
+        // 4. Delete Car
+        await sql.query('DELETE FROM cars WHERE id = ?', [id]);
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting car:', error);
+        return { success: false, error: 'เกิดข้อผิดพลาดในการลบข้อมูล' };
+    }
+}
+
+module.exports = { getCars, getCarById, addCar, editCar, searchOwners, exportCars, deleteCar };

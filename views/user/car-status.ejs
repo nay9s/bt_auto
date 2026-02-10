@@ -71,7 +71,7 @@
                                 </div>
                             </div>
 
-                            <% if (order.status !=='completed' && order.status !=='canceled' ) { %>
+                            <% if (order.status !=='canceled' ) { %>
                                 <div class="status-timeline">
                                     <% steps.forEach((step, index)=> {
                                         // Logic for active state
@@ -90,6 +90,11 @@
                                                 </div>
                                                 <div class="step-text <%= stepClass %>">
                                                     <%= step.label %>
+                                                        <% if (order.stepsDates && order.stepsDates[index]) { %>
+                                                            <div class="text-xs text-gray-500 font-normal mt-1">
+                                                                <%= order.stepsDates[index] %>
+                                                            </div>
+                                                            <% } %>
                                                 </div>
                                             </div>
                                             <% }); %>

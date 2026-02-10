@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="th">
+<%- include('./partials/head') %>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <body class="bg-gray-50 font-kanit">
+        <%- include('./partials/sidebar') %>
+
+            <!-- Main Content -->
+            <div class="lg:ml-64 min-h-screen flex flex-col">
+                <!-- Top Bar -->
+                <div class="bg-white border-b border-gray-200 sticky top-0 z-20">
+                    <div class="px-6 py-3 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <button onclick="toggleSidebar()" class="lg:hidden text-gray-500 hover:text-primary">
+                                <i class="fa-solid fa-bars text-xl"></i>
+                            </button>
+                            <nav class="flex" aria-label="Breadcrumb">
+                                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                                    <li class="inline-flex items-center">
+                                        <a href="/admin/dashboard"
+                                            class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary">
+                                            <i class="fa-solid fa-home mr-2"></i>
+                                            หน้าแรก
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="flex items-center">
+                                            <i class="fa-solid fa-chevron-right text-gray-400 mx-2"></i>
+                                            <span class="text-sm font-medium text-gray-500">การเงิน</span>
+                                        </div>
+                                    </li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="text-right hidden sm:block">
+                                <div class="text-sm font-medium text-gray-900">
+                                    <%= user.firstName %>
+                                        <%= user.lastName %>
+                                </div>
+                                <div class="text-xs text-gray-500 capitalize">
+                                    <%= user.roles %>
+                                </div>
+                            </div>
+                            <div
+                                class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-lg font-bold shadow-sm">
+                                <%= user.firstName.charAt(0) %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page Content -->
+                <div class="p-6 flex-1">
+                    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">การเงิน (Finance)</h1>
+                            <p class="text-gray-600 mt-1">ภาพรวมสถานะทางการเงินประจำงวด</p>
+                        </div>
+
+                        <!-- Period Toggles -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-1 flex">
+                            <button onclick="loadData('daily')" id="btn-daily"
+                                class="period-btn px-4 py-1.5 rounded-md text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50">รายวัน</button>
+                            <button onclick="loadData('weekly')" id="btn-weekly"
+                                class="period-btn px-4 py-1.5 rounded-md text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50">รายสัปดาห์</button>
+                            <button onclick="loadData('monthly')" id="btn-monthly"
+                                class="period-btn px-4 py-1.5 rounded-md text-sm font-medium transition-colors bg-green-50 text-green-700">รายเดือน</button>
+                            <button onclick="loadData('yearly')" id="btn-yearly"
+                                class="period-btn px-4 py-1.5 rounded-md text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50">รายปี</button>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Revenue -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 relative overflow-hidden">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center mb-4">
+                                        <i class="fa-solid fa-hand-holding-dollar text-xl"></i>
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-500">รายได้รวม (Revenue)</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-1" id="totalRevenue">฿0</h3>
+                                </div>
+                                <span
+                                    class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">+0%</span>
+                            </div>
+                        </div>
+
+                        <!-- Expenses -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 relative overflow-hidden">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-4">
+                                        <i class="fa-solid fa-arrow-trend-up text-xl"></i>
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-500">ค่าใช้จ่ายรวม (Expenses)</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-1" id="totalExpenses">฿0</h3>
+                                </div>
+                                <span
+                                    class="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full">+0%</span>
+                            </div>
+                        </div>
+
+                        <!-- Net Profit -->
+                        <div
+                            class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-l-red-500 relative overflow-hidden">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-4">
+                                        <i class="fa-solid fa-building-columns text-xl"></i>
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-500">กำไรสุทธิ (Net Profit)</p>
+                                    <h3 class="text-2xl font-bold text-red-600 mt-1" id="netProfit">฿0</h3>
+                                </div>
+                                <span
+                                    class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">+0%</span>
+                            </div>
+                        </div>
+
+                        <!-- Cash Flow -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 relative overflow-hidden">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+                                        <i class="fa-solid fa-money-bill-transfer text-xl"></i>
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-500">เงินสด (Cash Flow)</p>
+                                    <h3 class="text-2xl font-bold text-gray-900 mt-1" id="cashFlow">฿0</h3>
+                                </div>
+                                <span
+                                    class="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full">-0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Main Chart -->
+                        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900">รายได้ vs ค่าใช้จ่าย</h3>
+                                    <p class="text-xs text-gray-500">เปรียบเทียบยอดขายและต้นทุน</p>
+                                </div>
+                                <div class="flex gap-2 text-xs">
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-2 h-2 rounded-full bg-green-500"></span> รายได้
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-2 h-2 rounded-full bg-red-500"></span> ค่าใช้จ่าย
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="h-80 w-full relative">
+                                <canvas id="revenueExpenseChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Categories Chart -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">หมวดหมู่ค่าใช้จ่าย</h3>
+                            <p class="text-xs text-gray-500 mb-6">สัดส่วนค่าใช้จ่ายตามหมวดหมู่</p>
+                            <div class="h-64 relative flex items-center justify-center">
+                                <canvas id="expenseCategoryChart"></canvas>
+                            </div>
+                            <div class="mt-6 text-center">
+                                <h4 class="text-xl font-bold text-red-500" id="catTotal">฿0</h4>
+                                <p class="text-xs text-gray-500">ยอดรวมค่าใช้จ่าย</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                let revenueChart = null;
+                let categoryChart = null;
+
+                // Number formatter
+                const formatCurrency = (amount) => {
+                    return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(amount);
+                };
+
+                async function loadData(period) {
+                    // Update Buttons
+                    document.querySelectorAll('.period-btn').forEach(btn => {
+                        btn.classList.remove('bg-green-50', 'text-green-700');
+                        btn.classList.add('text-gray-600', 'hover:bg-gray-50');
+                    });
+                    document.getElementById(`btn-${period}`).classList.remove('text-gray-600', 'hover:bg-gray-50');
+                    document.getElementById(`btn-${period}`).classList.add('bg-green-50', 'text-green-700');
+
+                    try {
+                        const response = await fetch(`/admin/api/finance?period=${period}`);
+                        const data = await response.json();
+
+                        // Update Cards
+                        document.getElementById('totalRevenue').innerText = formatCurrency(data.cards.revenue);
+                        document.getElementById('totalExpenses').innerText = formatCurrency(data.cards.expenses);
+                        document.getElementById('netProfit').innerText = formatCurrency(data.cards.profit);
+                        document.getElementById('cashFlow').innerText = formatCurrency(data.cards.cashFlow);
+
+                        // Update profit color
+                        const profitEl = document.getElementById('netProfit');
+                        if (data.cards.profit >= 0) {
+                            profitEl.classList.remove('text-red-600');
+                            profitEl.classList.add('text-green-600');
+                        } else {
+                            profitEl.classList.remove('text-green-600');
+                            profitEl.classList.add('text-red-600');
+                        }
+
+                        document.getElementById('catTotal').innerText = formatCurrency(data.cards.expenses);
+
+                        // Update Charts
+                        renderRevenueChart(data.chart);
+                        renderCategoryChart(data.categories);
+
+                    } catch (error) {
+                        console.error('Error loading finance data:', error);
+                    }
+                }
+
+                function renderRevenueChart(chartData) {
+                    const ctx = document.getElementById('revenueExpenseChart').getContext('2d');
+
+                    if (revenueChart) {
+                        revenueChart.destroy();
+                    }
+
+                    revenueChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: chartData.labels,
+                            datasets: [
+                                {
+                                    label: 'รายได้',
+                                    data: chartData.revenue,
+                                    backgroundColor: '#10B981', // Green-500
+                                    borderRadius: 4,
+                                    barPercentage: 0.6
+                                },
+                                {
+                                    label: 'ค่าใช้จ่าย',
+                                    data: chartData.expenses,
+                                    backgroundColor: '#EF4444', // Red-500
+                                    borderRadius: 4,
+                                    barPercentage: 0.6
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { borderDash: [2, 2] }
+                                },
+                                x: {
+                                    grid: { display: false }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                function renderCategoryChart(catData) {
+                    const ctx = document.getElementById('expenseCategoryChart').getContext('2d');
+
+                    if (categoryChart) {
+                        categoryChart.destroy();
+                    }
+
+                    categoryChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: catData.labels,
+                            datasets: [{
+                                data: catData.data,
+                                backgroundColor: [
+                                    '#EF4444', '#F87171', '#FCA5A5', '#FECACA', '#FEE2E2',
+                                    '#F59E0B', '#10B981', '#3B82F6'
+                                ],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+                            },
+                            cutout: '70%'
+                        }
+                    });
+                }
+
+                // Initialize with default
+                loadData('monthly');
+
+            </script>
+    </body>
+
+</html>

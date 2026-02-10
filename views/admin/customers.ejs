@@ -141,6 +141,10 @@
                                                         class="text-primary hover:text-primary-dark mr-3 transition-colors">
                                                         <i class="fa-solid fa-pen-to-square"></i> แก้ไข
                                                     </button>
+                                                    <button onclick="confirmDelete('<%= customer.id %>')"
+                                                        class="text-red-500 hover:text-red-700 transition-colors">
+                                                        <i class="fa-solid fa-trash"></i> ลบ
+                                                    </button>
                                                 </td>
                                             </tr>
                                             <% }) %>
@@ -311,6 +315,12 @@
                     setTimeout(() => {
                         modal.classList.add('hidden');
                     }, 300);
+                }
+
+                function confirmDelete(id) {
+                    if (confirm('คุณแน่ใจหรือไม่ที่จะลบข้อมูลลูกค้านี้? ข้อมูลที่เกี่ยวข้องทั้งหมด (รถยนต์, ประวัติซ่อม) จะถูกลบด้วย')) {
+                        window.location.href = `/admin/customers/delete/${id}`;
+                    }
                 }
 
                 // Check for error in URL

@@ -9,7 +9,7 @@
                     <h1>อู่บีที ออโต้เซอร์วิส</h1>
                     <span>BT AUTO SERVICE</span>
                 </a>
-                
+
             </div>
         </div>
 
@@ -22,10 +22,12 @@
                     class="fa-solid fa-clock-rotate-left"></i> <span>ประวัติบริการ</span></a>
             <a href="/contact" class="<%= path === '/contact' ? 'active' : '' %>"><i class="fa-solid fa-phone"></i>
                 <span>ติดต่ออู่</span></a>
-            <% if (typeof user !== 'undefined' && user && user.roles === "Admin"){ %>
-                <a href="/admin" class="<%= path === '/admin' ? 'active' : '' %>"><i class="fa-solid fa-pen-to-square"></i>
-                <span>จัดการอู่</span></a>
-            <% } %>
+            <% if (typeof user !=='undefined' && user && user.roles && (user.roles.includes('Admin') ||
+                user.roles.includes('admin'))) { %>
+                <a href="/admin" class="<%= path === '/admin' ? 'active' : '' %>"><i
+                        class="fa-solid fa-pen-to-square"></i>
+                    <span>จัดการอู่</span></a>
+                <% } %>
         </div>
 
         <div class="user-profile">

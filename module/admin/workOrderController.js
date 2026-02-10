@@ -80,6 +80,19 @@ async function getWorkOrderById(id) {
     return workOrder;
 }
 
+// Helper to log status change
+async function logStatusChange(workOrderId, status, connection) {
+    try {
+        await connection.query(
+            'INSERT INTO work_order_history (work_order_id, status) VALUES (?, ?)',
+            [workOrderId, status]
+        );
+        console.log(`[StatusLog] Logged status '${status}' for WO #${workOrderId}`);
+    } catch (error) {
+        console.error(`[StatusLog] Failed to log status for WO #${workOrderId}:`, error);
+    }
+}
+
 // Create Work Order
 async function createWorkOrder(data) {
     const connection = await sql.getConnection();
@@ -97,7 +110,10 @@ async function createWorkOrder(data) {
 
         const workOrderId = result.insertId;
 
-        // 2. Insert Items (if any)
+        // 2. Log Initial Status
+        await logStatusChange(workOrderId, status || 'pending', connection);
+
+        // 3. Insert Items (if any)
         if (items && items.length > 0) {
             for (const item of items) {
                 const itemTotal = parseFloat(item.quantity) * parseFloat(item.unit_price);
@@ -117,7 +133,7 @@ async function createWorkOrder(data) {
             }
         }
 
-        // 3. Update Total Cost
+        // 4. Update Total Cost
         await connection.query(`
             UPDATE work_orders SET cost = ? WHERE id = ?
         `, [totalCost, workOrderId]);
@@ -176,6 +192,13 @@ async function updateWorkOrder(id, data) {
 
         // 3. Update Work Order Details
         console.log('[UpdateWO] Updating WO details...'); // DEBUG
+
+        // 3.1 Check if status changed
+        const [currentWO] = await connection.query('SELECT status FROM work_orders WHERE id = ?', [id]);
+        if (currentWO.length > 0 && currentWO[0].status !== status) {
+            await logStatusChange(id, status, connection);
+        }
+
         await connection.query(`
             UPDATE work_orders 
             SET car_id = ?, service_type = ?, description = ?, status = ?, appointment_date = ?, updated_at = NOW()

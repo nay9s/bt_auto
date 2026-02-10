@@ -75,9 +75,55 @@ async function addItem(data, file) {
     }
 }
 
-// Update item (placeholder for future use)
+// Get item by ID
+async function getItemById(id) {
+    const [rows] = await sql.query('SELECT * FROM inventory WHERE id = ?', [id]);
+    return rows[0];
+}
+
+// Update item
 async function updateItem(id, data, file) {
-    // Implementation for update
+    try {
+        const {
+            name, sku, category, quantity, min_quantity,
+            cost_price, selling_price, supplier
+        } = data;
+
+        let query = `
+            UPDATE inventory SET 
+            name = ?, sku = ?, category = ?, quantity = ?, min_quantity = ?,
+            cost_price = ?, selling_price = ?, supplier = ?
+        `;
+        const params = [
+            name, sku, category, quantity, min_quantity,
+            cost_price, selling_price, supplier
+        ];
+
+        if (file) {
+            query += `, image_url = ?`;
+            params.push(`/uploads/inventory/${file.filename}`);
+        }
+
+        query += ` WHERE id = ?`;
+        params.push(id);
+
+        await sql.query(query, params);
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Restock item (Add quantity)
+async function restockItem(id, quantity) {
+    try {
+        await sql.query(`
+            UPDATE inventory SET quantity = quantity + ? WHERE id = ?
+        `, [quantity, id]);
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
 }
 
 // Delete item
@@ -92,7 +138,9 @@ async function deleteItem(id) {
 
 module.exports = {
     getInventory,
+    getItemById,
     addItem,
     updateItem,
+    restockItem,
     deleteItem
 };

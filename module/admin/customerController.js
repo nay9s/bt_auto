@@ -258,4 +258,42 @@ async function editCustomer(id, { firstName, lastName, phone, email }) {
     }
 }
 
-module.exports = { getCustomers, addCustomer, exportCustomers, getCustomerById, editCustomer };
+async function deleteCustomer(id) {
+    if (!id) return { success: false, error: 'ไม่พบ ID ลูกค้า' };
+
+    try {
+        // 1. Get all cars for this user
+        const [cars] = await sql.query('SELECT id FROM cars WHERE user_id = ?', [id]);
+        const carIds = cars.map(c => c.id);
+
+        if (carIds.length > 0) {
+            // 2. Delete Work Orders items for these cars
+            // We need work_order_ids first
+            const [waste] = await sql.query('SELECT id FROM work_orders WHERE car_id IN (?)', [carIds]);
+            const workOrderIds = waste.map(wo => wo.id);
+
+            if (workOrderIds.length > 0) {
+                await sql.query('DELETE FROM work_order_items WHERE work_order_id IN (?)', [workOrderIds]);
+                // 3. Delete Work Orders
+                await sql.query('DELETE FROM work_orders WHERE car_id IN (?)', [carIds]);
+            }
+
+            // 4. Delete Cars
+            await sql.query('DELETE FROM cars WHERE user_id = ?', [id]);
+        }
+
+        // 5. Delete User Roles
+        await sql.query('DELETE FROM user_roles WHERE user_id = ?', [id]);
+
+        // 6. Delete User
+        await sql.query('DELETE FROM users WHERE id = ?', [id]);
+
+        return { success: true };
+
+    } catch (error) {
+        console.error('Error deleting customer:', error);
+        return { success: false, error: 'เกิดข้อผิดพลาดในการลบข้อมูล (อาจมีข้อมูลที่เกี่ยวข้อง)' };
+    }
+}
+
+module.exports = { getCustomers, addCustomer, exportCustomers, getCustomerById, editCustomer, deleteCustomer };

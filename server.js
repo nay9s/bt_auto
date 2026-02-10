@@ -130,7 +130,7 @@ app.get('/car-status', requireAuth, async (req, res) => {
 
     const statusSteps = ['pending', 'checking', 'waiting_parts', 'repairing', 'repair_done', 'ready_for_pickup'];
 
-    const formattedOrders = orders.map(order => {
+    const formattedOrders = await Promise.all(orders.map(async (order) => {
       // Determine active step index
       let activeStepIndex = 0;
       switch (order.status) {
@@ -138,19 +138,53 @@ app.get('/car-status', requireAuth, async (req, res) => {
         case 'checking': activeStepIndex = 1; break;
         case 'waiting_parts': activeStepIndex = 2; break;
         case 'repairing': activeStepIndex = 3; break;
-        // Case for 'repair_done' if we had it, but otherwise 'ready_for_pickup' maps to last
         case 'ready_for_pickup': activeStepIndex = 5; break;
-        case 'completed': activeStepIndex = 6; break; // All done
+        case 'completed': activeStepIndex = 6; break;
         default: activeStepIndex = 0;
+      }
+
+      // Fetch History Logs
+      const [historyLogs] = await sql.query(`
+          SELECT status, created_at 
+          FROM work_order_history 
+          WHERE work_order_id = ? 
+          ORDER BY created_at ASC
+      `, [order.work_order_id]);
+
+      // Map history dates to steps
+      const stepsDates = {};
+      historyLogs.forEach(log => {
+        // Format date: "10 Feb 2024" or similar
+        const dateStr = new Date(log.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+        const timeStr = new Date(log.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        const fullDate = `${dateStr} ${timeStr}`;
+
+        // Map status to step index/key
+        // 0: pending, 1: checking, 2: waiting_parts, 3: repairing, 5: ready_for_pickup
+        // Note: 'completed' not shown in timeline usually, but if it is, it's step 6
+        if (log.status === 'pending') stepsDates[0] = fullDate;
+        if (log.status === 'checking') stepsDates[1] = fullDate;
+        if (log.status === 'waiting_parts') stepsDates[2] = fullDate;
+        if (log.status === 'repairing') stepsDates[3] = fullDate;
+        // Step 4 is "Repair Done" (implied by ready_for_pickup start?) -> Let's use repairing end or just skip for now
+        // Actually, if we have ready_for_pickup, that's step 5. 
+        if (log.status === 'ready_for_pickup') stepsDates[5] = fullDate;
+        if (log.status === 'completed') stepsDates[6] = fullDate;
+      });
+
+      // Special case: If created_at exists in order, use it for step 0 if not in history (for old orders)
+      if (!stepsDates[0] && order.created_at) {
+        stepsDates[0] = new Date(order.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }) + ' ' + new Date(order.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
       }
 
       return {
         ...order,
         activeStepIndex,
+        stepsDates, // Pass dates to view
         formattedDate: order.appointment_date ? new Date(order.appointment_date).toLocaleDateString('th-TH') : '-',
         formattedEndDate: order.end_date ? new Date(order.end_date).toLocaleDateString('th-TH') : '-'
       };
-    });
+    }));
 
     const userSession = req.session.user;
     const userView = {
@@ -172,58 +206,7 @@ app.get('/car-status', requireAuth, async (req, res) => {
   }
 });
 
-app.get('/car-details', requireAuth, async (req, res) => {
-  try {
-    const workOrderId = req.query.id;
-    if (!workOrderId) {
-      return res.redirect('/home');
-    }
 
-    const workOrder = await getWorkOrderById(workOrderId);
-
-    // Security Check: Ensure this work order belongs to one of the user's cars
-    // The workOrder object from getWorkOrderById includes user_id of the car owner
-    if (!workOrder || workOrder.user_id !== req.session.user.id) {
-      return res.status(403).send('Unauthorized or Not Found');
-    }
-
-    // Format data for view
-    const statusTranslation = {
-      'pending': 'รอดำเนินการ',
-      'checking': 'กำลังตรวจเช็ค',
-      'repairing': 'กำลังซ่อมแซม',
-      'waiting_parts': 'รออะไหล่',
-      'ready_for_pickup': 'รอรับรถ',
-      'completed': 'ซ่อมเสร็จสิ้น',
-      'canceled': 'ยกเลิก'
-    };
-
-    workOrder.statusTh = statusTranslation[workOrder.status] || workOrder.status;
-    workOrder.formattedDate = workOrder.appointment_date ? new Date(workOrder.appointment_date).toLocaleDateString('th-TH') : '-';
-    workOrder.formattedCost = workOrder.cost ? parseFloat(workOrder.cost).toLocaleString('th-TH', { minimumFractionDigits: 2 }) : '0.00';
-
-    // Format items if needed? They are already in workOrder.items
-
-    // Pass user data for navbar
-    const userSession = req.session.user;
-    const userView = {
-      ...userSession,
-      firstName: userSession.first_name || userSession.firstName,
-      lastName: userSession.last_name || userSession.lastName,
-      roles: userSession.role || userSession.roles
-    };
-
-    res.render('user/car-details', {
-      user: userView,
-      path: '/car-details',
-      order: workOrder
-    });
-
-  } catch (error) {
-    console.error('Error fetching car details:', error);
-    res.redirect('/home');
-  }
-});
 
 app.get('/add-car', requireAuth, (req, res) => {
   res.render('user/add-car', { user: req.session.user, path: '/add-car' })
@@ -364,9 +347,7 @@ app.get('/history', requireAuth, async (req, res) => {
   }
 })
 
-app.get('/car-status', requireAuth, (req, res) => {
-  res.render('user/car-status', { user: req.session.user, path: '/car-status' })
-})
+
 
 app.get('/contact', requireAuth, (req, res) => {
   res.render('user/contact', { user: req.session.user, path: '/contact' })
@@ -392,13 +373,78 @@ app.get('/logout', logout)
 
 // ==============  ADMIN  =============== //
 const { requireAdmin } = require('./module/auth/requireAdmin')
-const { getCustomers, addCustomer, exportCustomers, getCustomerById, editCustomer } = require('./module/admin/customerController')
-const { getCars, addCar, searchOwners, getCarById, editCar, exportCars } = require('./module/admin/carController')
+const { getCustomers, addCustomer, exportCustomers, getCustomerById, editCustomer, deleteCustomer } = require('./module/admin/customerController')
+const { getCars, addCar, searchOwners, getCarById, editCar, exportCars, deleteCar } = require('./module/admin/carController')
 const { getInventory, addItem, updateItem, deleteItem } = require('./module/admin/inventoryController')
 const { getWorkOrders, getWorkOrderById, createWorkOrder, getUsersForDropdown, getCarsByUserId, updateWorkOrder, deleteWorkOrder } = require('./module/admin/workOrderController')
+const { getFinanceData } = require('./module/admin/financeController')
 const { runMigrations } = require('./module/migrations/migration')
 const multer = require('multer')
 const fs = require('fs')
+
+// Configure Multer for Cars
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = './public/uploads/cars';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir)
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname))
+  }
+})
+const upload = multer({ storage: storage })
+
+// Configure Multer for Inventory
+const storageInventory = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = './public/uploads/inventory';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir)
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname))
+  }
+})
+const uploadInventory = multer({ storage: storageInventory })
+
+// Delete Customer
+app.get('/admin/customers/delete/:id', requireAuth, requireAdmin, async (req, res) => {
+  const result = await deleteCustomer(req.params.id);
+  if (result.success) {
+    res.redirect('/admin/customers');
+  } else {
+    res.redirect('/admin/customers?error=' + encodeURIComponent(result.error));
+  }
+});
+
+app.post('/admin/cars/edit/:id', requireAuth, requireAdmin, upload.single('image'), async (req, res) => {
+  const result = await editCar(req.params.id, req.body, req.file);
+  if (result.success) {
+    res.redirect('/admin/cars');
+  } else {
+    res.redirect('/admin/cars?error=' + encodeURIComponent(result.error));
+  }
+})
+
+// Delete Car
+app.get('/admin/cars/delete/:id', requireAuth, requireAdmin, async (req, res) => {
+  const result = await deleteCar(req.params.id);
+  if (result.success) {
+    res.redirect('/admin/cars');
+  } else {
+    res.redirect('/admin/cars?error=' + encodeURIComponent(result.error));
+  }
+});
+
+// Admin Redirect
+app.get('/admin', requireAuth, requireAdmin, (req, res) => {
+  res.redirect('/admin/work-orders');
+});
 
 // Configure Multer
 // ... (omitted)
@@ -435,36 +481,7 @@ app.get('/admin/work-orders/delete/:id', requireAuth, requireAdmin, async (req, 
   }
 });
 
-// Configure Multer
-// Configure Multer for Cars
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const dir = './public/uploads/cars';
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir)
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)) // Append extension
-  }
-})
-const upload = multer({ storage: storage })
 
-// Configure Multer for Inventory
-const storageInventory = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const dir = './public/uploads/inventory';
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir)
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname))
-  }
-})
-const uploadInventory = multer({ storage: storageInventory })
 
 // --- API --- //
 app.get('/admin/api/owners', requireAuth, requireAdmin, async (req, res) => {
@@ -650,6 +667,7 @@ app.get('/admin/inventory', requireAuth, requireAdmin, async (req, res) => {
   }
 })
 
+
 app.post('/admin/inventory/add', requireAuth, requireAdmin, uploadInventory.single('image'), async (req, res) => {
   const result = await addItem(req.body, req.file);
   if (result.success) {
@@ -658,6 +676,30 @@ app.post('/admin/inventory/add', requireAuth, requireAdmin, uploadInventory.sing
     res.redirect('/admin/inventory?error=' + encodeURIComponent(result.error));
   }
 })
+
+app.post('/admin/inventory/edit/:id', requireAuth, requireAdmin, uploadInventory.single('image'), async (req, res) => {
+  const result = await updateItem(req.params.id, req.body, req.file);
+  if (result.success) {
+    res.redirect('/admin/inventory');
+  } else {
+    res.redirect('/admin/inventory?error=' + encodeURIComponent(result.error));
+  }
+})
+
+app.post('/admin/inventory/restock/:id', requireAuth, requireAdmin, async (req, res) => {
+  const result = await require('./module/admin/inventoryController').restockItem(req.params.id, req.body.quantity);
+  if (result.success) {
+    res.redirect('/admin/inventory');
+  } else {
+    res.redirect('/admin/inventory?error=' + encodeURIComponent(result.error));
+  }
+})
+
+app.get('/admin/api/inventory/:id', requireAuth, requireAdmin, async (req, res) => {
+  const item = await require('./module/admin/inventoryController').getItemById(req.params.id);
+  if (item) res.json(item);
+  else res.status(404).json({ error: 'Item not found' });
+});
 
 // --- WORK ORDERS --- //
 app.get('/admin/work-orders', requireAuth, requireAdmin, async (req, res) => {
@@ -790,6 +832,38 @@ app.get('/admin/api/users/:id/cars', requireAuth, requireAdmin, async (req, res)
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch cars' });
+  }
+});
+
+// --- FINANCE --- //
+app.get('/admin/finance', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const userSession = req.session.user;
+    const userView = {
+      ...userSession,
+      firstName: userSession.first_name || userSession.firstName,
+      lastName: userSession.last_name || userSession.lastName,
+      roles: userSession.role || userSession.roles
+    };
+
+    res.render('admin/finance', {
+      user: userView,
+      path: '/admin/finance'
+    });
+  } catch (error) {
+    console.error('Error rendering finance page:', error);
+    res.status(500).send('เกิดข้อผิดพลาด');
+  }
+});
+
+app.get('/admin/api/finance', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const period = req.query.period || 'monthly';
+    const data = await getFinanceData(period);
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching finance data:', error);
+    res.status(500).json({ error: 'Failed to fetch data' });
   }
 });
 

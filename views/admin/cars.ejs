@@ -173,6 +173,10 @@
                                                         class="text-primary hover:text-primary-dark mr-3 transition-colors">
                                                         <i class="fa-solid fa-pen-to-square"></i> แก้ไข
                                                     </button>
+                                                    <button onclick="confirmDelete('<%= car.id %>')"
+                                                        class="text-red-500 hover:text-red-700 transition-colors">
+                                                        <i class="fa-solid fa-trash"></i> ลบ
+                                                    </button>
                                                 </td>
                                             </tr>
                                             <% }) %>
@@ -245,9 +249,10 @@
             <!-- Car Modal (Shared for Add/Edit) -->
             <div id="carModal"
                 class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl shadow-lg w-full max-w-lg overflow-hidden transform transition-all scale-95 opacity-0"
+                <div class="bg-white rounded-xl shadow-lg w-full max-w-lg transform transition-all scale-95 opacity-0"
                     id="modalContent">
-                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <div
+                        class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center rounded-t-xl">
                         <h3 class="text-lg font-bold text-gray-800" id="modalTitle">เพิ่มรถยนต์ใหม่</h3>
                         <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
                             <i class="fa-solid fa-times text-xl"></i>
@@ -335,7 +340,7 @@
                             </div>
                         </div>
 
-                        <div class="pt-4 flex justify-end gap-3">
+                        <div class="pt-4 flex justify-end gap-3 rounded-b-xl">
                             <button type="button" onclick="closeModal()"
                                 class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium">ยกเลิก</button>
                             <button type="submit"
@@ -411,6 +416,12 @@
                     setTimeout(() => {
                         modal.classList.add('hidden');
                     }, 300);
+                }
+
+                function confirmDelete(id) {
+                    if (confirm('คุณแน่ใจหรือไม่ที่จะลบรถยนต์คันนี้? ประวัติการซ่อมทั้งหมดของรถคันนี้จะถูกลบด้วย')) {
+                        window.location.href = `/admin/cars/delete/${id}`;
+                    }
                 }
 
                 function previewImage(input) {

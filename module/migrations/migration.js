@@ -63,6 +63,19 @@ async function runMigrations() {
         `);
         console.log('Migration: Work Order Items table checked/created.');
 
+        // 7. Create Work Order History Table
+        await sql.query(`
+            CREATE TABLE IF NOT EXISTS work_order_history (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                work_order_id INT NOT NULL,
+                status VARCHAR(50) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_by INT DEFAULT NULL,
+                FOREIGN KEY (work_order_id) REFERENCES work_orders(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        `);
+        console.log('Migration: Work Order History table checked/created.');
+
         console.log('All migrations completed successfully.');
 
     } catch (error) {

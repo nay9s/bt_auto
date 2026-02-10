@@ -222,10 +222,11 @@
                                                 <td class="p-4 text-center">
                                                     <div class="flex items-center justify-center gap-2">
                                                         <button
+                                                            onclick="openRestockModal(<%= item.id %>, '<%= item.name %>')"
                                                             class="w-8 h-8 rounded-full bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center transition-colors">
                                                             <i class="fa-solid fa-cart-plus text-xs"></i>
                                                         </button>
-                                                        <button
+                                                        <button onclick="openEditModal(<%= item.id %>)"
                                                             class="w-8 h-8 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors">
                                                             <i class="fa-solid fa-eye text-xs"></i>
                                                         </button>
@@ -283,18 +284,46 @@
                 </div>
             </div>
 
-            <!-- Add Item Modal -->
+            <!-- Restock Modal -->
+            <div id="restockModal"
+                class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl shadow-xl w-full max-w-sm">
+                    <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-xl">
+                        <h3 class="text-lg font-bold text-gray-900">เติมสต็อกสินค้า</h3>
+                        <button onclick="closeRestockModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <form id="restockForm" method="POST" class="p-6">
+                        <p class="mb-4 text-gray-600" id="restockItemName"></p>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700">จำนวนที่เพิ่ม <span
+                                    class="text-red-500">*</span></label>
+                            <input type="number" name="quantity" required min="1" value="1"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                        </div>
+                        <div class="mt-6 flex justify-end gap-3">
+                            <button type="button" onclick="closeRestockModal()"
+                                class="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50">ยกเลิก</button>
+                            <button type="submit"
+                                class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">ยืนยัน</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Add/Edit Item Modal -->
             <div id="addItemModal"
                 class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
                 <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-xl">
-                        <h3 class="text-lg font-bold text-gray-900">เพิ่มอะไหล่ใหม่</h3>
+                        <h3 class="text-lg font-bold text-gray-900" id="modalTitle">เพิ่มอะไหล่ใหม่</h3>
                         <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
                             <i class="fa-solid fa-times text-xl"></i>
                         </button>
                     </div>
 
-                    <form action="/admin/inventory/add" method="POST" enctype="multipart/form-data"
+                    <form id="inventoryForm" action="/admin/inventory/add" method="POST" enctype="multipart/form-data"
                         class="p-6 space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <!-- Image Upload -->
@@ -317,21 +346,21 @@
                             <div class="space-y-1">
                                 <label class="text-sm font-medium text-gray-700">ชื่ออะไหล่ <span
                                         class="text-red-500">*</span></label>
-                                <input type="text" name="name" required
+                                <input type="text" name="name" id="name" required
                                     class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                             </div>
 
                             <div class="space-y-1">
                                 <label class="text-sm font-medium text-gray-700">รหัสสินค้า (SKU) <span
                                         class="text-red-500">*</span></label>
-                                <input type="text" name="sku" required
+                                <input type="text" name="sku" id="sku" required
                                     class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                             </div>
 
                             <div class="space-y-1">
                                 <label class="text-sm font-medium text-gray-700">หมวดหมู่ <span
                                         class="text-red-500">*</span></label>
-                                <select name="category" required
+                                <select name="category" id="category" required
                                     class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white">
                                     <option value="">เลือกหมวดหมู่</option>
                                     <option value="น้ำมันเครื่อง">น้ำมันเครื่อง</option>
@@ -347,28 +376,29 @@
 
                             <div class="space-y-1">
                                 <label class="text-sm font-medium text-gray-700">ผู้จำหน่าย</label>
-                                <input type="text" name="supplier"
+                                <input type="text" name="supplier" id="supplier"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                             </div>
 
                             <div class="space-y-1">
                                 <label class="text-sm font-medium text-gray-700">ราคาต้นทุน (บาท) <span
                                         class="text-red-500">*</span></label>
-                                <input type="number" name="cost_price" required min="0" step="0.01"
+                                <input type="number" name="cost_price" id="cost_price" required min="0" step="0.01"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                             </div>
 
                             <div class="space-y-1">
                                 <label class="text-sm font-medium text-gray-700">ราคาขาย (บาท) <span
                                         class="text-red-500">*</span></label>
-                                <input type="number" name="selling_price" required min="0" step="0.01"
+                                <input type="number" name="selling_price" id="selling_price" required min="0"
+                                    step="0.01"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                             </div>
 
                             <div class="space-y-1">
                                 <label class="text-sm font-medium text-gray-700">จำนวนคงเหลือ <span
                                         class="text-red-500">*</span></label>
-                                <input type="number" name="quantity" required min="0"
+                                <input type="number" name="quantity" id="quantity" required min="0"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                             </div>
 
@@ -376,7 +406,8 @@
                                 <label class="text-sm font-medium text-gray-700">จุดสั่งซื้อขั้นต่ำ (Min) <span
                                         class="text-red-500">*</span></label>
                                 <div class="relative">
-                                    <input type="number" name="min_quantity" required min="0" value="5"
+                                    <input type="number" name="min_quantity" id="min_quantity" required min="0"
+                                        value="5"
                                         class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary pl-10">
                                     <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                                         <i class="fa-solid fa-triangle-exclamation text-xs"></i>
@@ -401,7 +432,53 @@
 
             <script>
                 function openAddModal() {
+                    document.getElementById('modalTitle').textContent = 'เพิ่มอะไหล่ใหม่';
+                    document.getElementById('inventoryForm').action = '/admin/inventory/add';
+                    document.getElementById('inventoryForm').reset();
+                    document.getElementById('previewImg').classList.add('hidden');
                     document.getElementById('addItemModal').classList.remove('hidden');
+                }
+
+                async function openEditModal(id) {
+                    try {
+                        const response = await fetch(`/admin/api/inventory/${id}`);
+                        const item = await response.json();
+
+                        document.getElementById('modalTitle').textContent = 'แก้ไขข้อมูลอะไหล่';
+                        document.getElementById('inventoryForm').action = `/admin/inventory/edit/${id}`;
+
+                        document.getElementById('name').value = item.name;
+                        document.getElementById('sku').value = item.sku;
+                        document.getElementById('category').value = item.category;
+                        document.getElementById('supplier').value = item.supplier || '';
+                        document.getElementById('cost_price').value = item.cost_price;
+                        document.getElementById('selling_price').value = item.selling_price;
+                        document.getElementById('quantity').value = item.quantity;
+                        document.getElementById('min_quantity').value = item.min_quantity;
+
+                        if (item.image_url) {
+                            const preview = document.getElementById('previewImg');
+                            preview.src = item.image_url;
+                            preview.classList.remove('hidden');
+                        } else {
+                            document.getElementById('previewImg').classList.add('hidden');
+                        }
+
+                        document.getElementById('addItemModal').classList.remove('hidden');
+                    } catch (error) {
+                        console.error('Error fetching item:', error);
+                        alert('ไม่สามารถดึงข้อมูลสินค้าได้');
+                    }
+                }
+
+                function openRestockModal(id, name) {
+                    document.getElementById('restockItemName').textContent = `เพิ่มจำนวนสินค้า: ${name}`;
+                    document.getElementById('restockForm').action = `/admin/inventory/restock/${id}`;
+                    document.getElementById('restockModal').classList.remove('hidden');
+                }
+
+                function closeRestockModal() {
+                    document.getElementById('restockModal').classList.add('hidden');
                 }
 
                 function closeAddModal() {
@@ -420,12 +497,17 @@
                     }
                 }
 
-                // Close modal when clicking outside
-                document.getElementById('addItemModal').addEventListener('click', function (e) {
-                    if (e.target === this) {
+                // Close modals when clicking outside
+                window.onclick = function (event) {
+                    const addModal = document.getElementById('addItemModal');
+                    const restockModal = document.getElementById('restockModal');
+                    if (event.target == addModal) {
                         closeAddModal();
                     }
-                });
+                    if (event.target == restockModal) {
+                        closeRestockModal();
+                    }
+                }
             </script>
     </body>
 
