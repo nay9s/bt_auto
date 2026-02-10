@@ -378,6 +378,7 @@ const { getCars, addCar, searchOwners, getCarById, editCar, exportCars, deleteCa
 const { getInventory, addItem, updateItem, deleteItem } = require('./module/admin/inventoryController')
 const { getWorkOrders, getWorkOrderById, createWorkOrder, getUsersForDropdown, getCarsByUserId, updateWorkOrder, deleteWorkOrder } = require('./module/admin/workOrderController')
 const { getFinanceData } = require('./module/admin/financeController')
+const { getDashboardStats } = require('./module/admin/dashboardController')
 const { runMigrations } = require('./module/migrations/migration')
 const multer = require('multer')
 const fs = require('fs')
@@ -443,7 +444,32 @@ app.get('/admin/cars/delete/:id', requireAuth, requireAdmin, async (req, res) =>
 
 // Admin Redirect
 app.get('/admin', requireAuth, requireAdmin, (req, res) => {
-  res.redirect('/admin/work-orders');
+  res.redirect('/admin/dashboard');
+});
+
+// Admin Dashboard
+app.get('/admin/dashboard', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const stats = await getDashboardStats();
+
+    // Check user object and ensure properties exist (fixing firstName vs first_name mismatch)
+    const userSession = req.session.user;
+    const userView = {
+      ...userSession,
+      firstName: userSession.first_name || userSession.firstName,
+      lastName: userSession.last_name || userSession.lastName,
+      roles: userSession.role || userSession.roles
+    };
+
+    res.render('admin/dashboard', {
+      user: userView,
+      path: '/admin/dashboard',
+      stats: stats
+    });
+  } catch (error) {
+    console.error('Dashboard Error:', error);
+    res.status(500).send('Error loading dashboard: ' + error.message + '<br><pre>' + error.stack + '</pre>');
+  }
 });
 
 // Configure Multer

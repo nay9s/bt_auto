@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="th">
+<%- include('partials/head', { pageTitle: 'Admin Dashboard' }) %>
+
+    <body class="bg-gray-50 text-gray-800 font-kanit">
+
+        <!-- Sidebar -->
+        <%- include('partials/sidebar', { path: '/admin/dashboard' }) %>
+
+            <!-- Content Area -->
+            <div class="lg:ml-64 min-h-screen flex flex-col transition-all duration-300">
+                <!-- Top Bar -->
+                <%- include('partials/topbar', { user: user, title: 'Dashboard' }) %>
+
+                    <main class="w-full grow p-6">
+                        <!-- Stats Row 1: Revenue & Overview -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <!-- Revenue Card -->
+                            <div class="bg-white rounded-xl shadow-sm p-6">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h3 class="text-gray-500 text-sm font-medium">รายได้รวม</h3>
+                                        <div class="text-3xl font-bold text-gray-800 mt-2">
+                                            ฿<%= new Intl.NumberFormat('th-TH').format(stats.revenue.total) %>
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                        <i class="fa-solid fa-arrow-trend-up"></i> +15.2%
+                                    </span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-500">รายได้วันนี้: ฿<%= new
+                                            Intl.NumberFormat('th-TH').format(stats.revenue.today) %></span>
+                                    <span class="text-green-600 font-medium">เป้าหมาย: 85%</span>
+                                </div>
+                            </div>
+
+                            <!-- Car Stats Card -->
+                            <div class="bg-white rounded-xl shadow-sm p-6" x-data="{ period: 'today' }">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="text-gray-500 text-sm font-medium">จำนวนรถเข้าใช้บริการ</h3>
+                                    <div class="flex bg-gray-100 rounded-lg p-1 text-xs">
+                                        <button @click="period = 'today'"
+                                            :class="period === 'today' ? 'bg-white shadow text-gray-800' : 'text-gray-500 hover:text-gray-700'"
+                                            class="px-2 py-1 rounded transition-all">วันนี้</button>
+                                        <button @click="period = 'month'"
+                                            :class="period === 'month' ? 'bg-white shadow text-gray-800' : 'text-gray-500 hover:text-gray-700'"
+                                            class="px-2 py-1 rounded transition-all">เดือนนี้</button>
+                                        <button @click="period = 'year'"
+                                            :class="period === 'year' ? 'bg-white shadow text-gray-800' : 'text-gray-500 hover:text-gray-700'"
+                                            class="px-2 py-1 rounded transition-all">ปีนี้</button>
+                                        <button @click="period = 'all'"
+                                            :class="period === 'all' ? 'bg-white shadow text-gray-800' : 'text-gray-500 hover:text-gray-700'"
+                                            class="px-2 py-1 rounded transition-all">ทั้งหมด</button>
+                                    </div>
+                                </div>
+                                <div class="flex items-baseline gap-2 mb-4">
+                                    <span class="text-3xl font-bold text-gray-800" x-show="period === 'today'">
+                                        <%= stats.cars.today %> คัน
+                                    </span>
+                                    <span class="text-3xl font-bold text-gray-800" x-show="period === 'month'"
+                                        style="display: none;">
+                                        <%= stats.cars.month %> คัน
+                                    </span>
+                                    <span class="text-3xl font-bold text-gray-800" x-show="period === 'year'"
+                                        style="display: none;">
+                                        <%= stats.cars.year %> คัน
+                                    </span>
+                                    <span class="text-3xl font-bold text-gray-800" x-show="period === 'all'"
+                                        style="display: none;">
+                                        <%= stats.cars.all %> คัน
+                                    </span>
+
+                                    <span class="text-gray-500 text-sm"
+                                        x-text="period === 'today' ? 'วันนี้' : (period === 'month' ? 'เดือนนี้' : (period === 'year' ? 'ปีนี้' : 'ทั้งหมด'))"></span>
+                                </div>
+                                <div class="flex gap-8">
+                                    <div>
+                                        <div class="text-xl font-bold text-blue-600">
+                                            <%= stats.cars.incoming %>
+                                        </div>
+                                        <div class="text-xs text-gray-500">จองคิวเข้ามา (วันนี้)</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xl font-bold text-orange-500">
+                                            <%= stats.cars.repairing %>
+                                        </div>
+                                        <div class="text-xs text-gray-500">กำลังซ่อม</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Profit Ratio Card -->
+                            <div class="bg-white rounded-xl shadow-sm p-6">
+                                <h3 class="text-gray-500 text-sm font-medium mb-2">อัตราส่วนกำไรสุทธิ</h3>
+                                <div class="flex items-baseline gap-2 mb-4">
+                                    <span class="text-3xl font-bold text-gray-800">
+                                        <%= stats.revenue.margin.toFixed(1) %>%
+                                    </span>
+                                    <% if (stats.revenue.margin>= 20) { %>
+                                        <span
+                                            class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Healthy</span>
+                                        <% } else if (stats.revenue.margin>= 10) { %>
+                                            <span
+                                                class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Moderate</span>
+                                            <% } else { %>
+                                                <span
+                                                    class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Low</span>
+                                                <% } %>
+                                </div>
+                                <div class="flex justify-between items-end mt-4">
+                                    <div class="text-xs text-gray-500">ต้นทุนรวม: ฿<%= new
+                                            Intl.NumberFormat('th-TH').format(stats.revenue.cost) %>
+                                    </div>
+                                    <!-- <div class="text-green-600 text-xs font-medium">+2.1% จากเดือนก่อน</div> -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Status & Timeline -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                            <!-- Status Cards (Left Column) -->
+                            <div class="lg:col-span-1 space-y-4">
+                                <h3 class="text-gray-700 font-bold flex items-center gap-2 mb-4">
+                                    <div class="w-2 h-6 bg-primary rounded-full"></div> สถานะงานซ่อม
+                                </h3>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <!-- Checking -->
+                                    <div
+                                        class="bg-blue-50 rounded-xl p-4 flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow cursor-pointer">
+                                        <div
+                                            class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-2">
+                                            <i class="fa-solid fa-clipboard-check"></i>
+                                        </div>
+                                        <div class="text-xl font-bold text-blue-700">
+                                            <%= stats.status.checking %> คัน
+                                        </div>
+                                        <div class="text-xs text-blue-600">กำลังตรวจเช็ค</div>
+                                    </div>
+                                    <!-- Waiting Parts -->
+                                    <div
+                                        class="bg-orange-50 rounded-xl p-4 flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow cursor-pointer">
+                                        <div
+                                            class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 mb-2">
+                                            <i class="fa-solid fa-box-open"></i>
+                                        </div>
+                                        <div class="text-xl font-bold text-orange-700">
+                                            <%= stats.status.waitingParts %> คัน
+                                        </div>
+                                        <div class="text-xs text-orange-600">รออะไหล่</div>
+                                    </div>
+                                    <!-- Repairing -->
+                                    <div
+                                        class="bg-red-50 rounded-xl p-4 flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow cursor-pointer">
+                                        <div
+                                            class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 mb-2">
+                                            <i class="fa-solid fa-wrench"></i>
+                                        </div>
+                                        <div class="text-xl font-bold text-red-700">
+                                            <%= stats.status.repairing %> คัน
+                                        </div>
+                                        <div class="text-xs text-red-600">กำลังซ่อม</div>
+                                    </div>
+                                    <!-- Completed -->
+                                    <div
+                                        class="bg-green-50 rounded-xl p-4 flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow cursor-pointer">
+                                        <div
+                                            class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-2">
+                                            <i class="fa-solid fa-check"></i>
+                                        </div>
+                                        <div class="text-xl font-bold text-green-700">
+                                            <%= stats.status.completedToday %> คัน
+                                        </div>
+                                        <div class="text-xs text-green-600">เสร็จสมบูรณ์วันนี้</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delivery Timeline (Right Column - Wider) -->
+                            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h3 class="text-gray-700 font-bold flex items-center gap-2">
+                                        <i class="fa-solid fa-hands-holding-circle text-green-500"></i>
+                                        งานซ่อมที่ต้องส่งมอบวันนี้
+                                    </h3>
+                                    <span class="text-xs text-gray-400">อัปเดตเมื่อ 2 นาทีที่แล้ว</span>
+                                </div>
+
+                                <div class="flex items-center gap-8 px-8 py-4">
+                                    <!-- Donut Chart Placeholder (CSS Only for simplicity or Chart.js if loaded) -->
+                                    <div class="relative w-32 h-32 flex items-center justify-center rounded-full border-8 border-gray-100"
+                                        style="border-top-color: #10B981; border-right-color: #10B981;">
+                                        <div class="text-center">
+                                            <div class="text-3xl font-bold text-gray-800">
+                                                <%= stats.deliveries.length %>
+                                            </div>
+                                            <div class="text-xs text-gray-500">คัน</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Delivery List -->
+                                    <div class="flex-1 space-y-3">
+                                        <% if (stats.deliveries.length> 0) { %>
+                                            <% stats.deliveries.forEach(car=> { %>
+                                                <div
+                                                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                                    <div class="flex items-center gap-3">
+                                                        <div
+                                                            class="w-2 h-2 rounded-full <%= car.status === 'ready_for_pickup' ? 'bg-green-500' : 'bg-blue-500' %>">
+                                                        </div>
+                                                        <div>
+                                                            <div class="font-medium text-gray-800">
+                                                                <%= car.brand %>
+                                                                    <%= car.model %>
+                                                            </div>
+                                                            <div class="text-xs text-gray-500">
+                                                                <%= car.license_plate %>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <span
+                                                        class="text-xs px-2 py-1 rounded bg-white border border-gray-200 text-gray-600">
+                                                        <%= car.status==='ready_for_pickup' ? 'รอรับรถ' : 'กำหนดวันนี้'
+                                                            %>
+                                                    </span>
+                                                </div>
+                                                <% }) %>
+                                                    <% } else { %>
+                                                        <div class="text-gray-400 text-center py-4">
+                                                            ไม่มีรถส่งมอบวันนี้</div>
+                                                        <% } %>
+                                    </div>
+                                </div>
+
+                                <!-- Progress Bar (Visual Flair) -->
+                                <div class="w-full h-4 bg-gray-100 rounded-full mt-6 overflow-hidden flex">
+                                    <div class="bg-green-400 h-full" style="width: 40%"></div>
+                                    <div class="bg-blue-500 h-full" style="width: 60%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Alerts -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Low Stock -->
+                            <div class="bg-white rounded-xl shadow-sm p-6">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-red-500 font-bold flex items-center gap-2">
+                                        <i class="fa-solid fa-triangle-exclamation"></i> แจ้งเตือนเช็คสต็อก
+                                    </h3>
+                                    <a href="/admin/inventory"
+                                        class="text-xs text-red-500 hover:underline">ดูทั้งหมด</a>
+                                </div>
+                                <div class="space-y-3">
+                                    <% if (stats.lowStock.length> 0) { %>
+                                        <% stats.lowStock.forEach(item=> { %>
+                                            <div
+                                                class="bg-red-50 border-l-4 border-red-400 p-3 rounded-r-lg flex justify-between items-center">
+                                                <div>
+                                                    <div class="font-bold text-gray-800 text-sm">
+                                                        <%= item.name %>
+                                                    </div>
+                                                    <div class="text-xs text-red-600 font-medium">
+                                                        เหลือ <%= item.quantity %> ชิ้น
+                                                            <span class="text-red-400">(ต่ำกว่า Min <%=
+                                                                    item.min_quantity %>)</span>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onclick="window.location.href='/admin/inventory?search=<%= item.name %>'"
+                                                    class="px-3 py-1 bg-white border border-red-200 text-red-500 text-xs rounded hover:bg-red-500 hover:text-white transition">สั่งซื้อ</button>
+                                            </div>
+                                            <% }) %>
+                                                <% } else { %>
+                                                    <div class="text-green-500 text-sm text-center">
+                                                        สินค้าเพียงพอทุกรายการ</div>
+                                                    <% } %>
+                                </div>
+                            </div>
+
+                            <!-- Overdue / Updates -->
+                            <div class="bg-white rounded-xl shadow-sm p-6">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-orange-500 font-bold flex items-center gap-2">
+                                        <i class="fa-solid fa-bell"></i> แจ้งเตือน & งานค้าง
+                                    </h3>
+                                </div>
+                                <div class="space-y-3">
+                                    <% if (stats.overdue.length> 0) { %>
+                                        <% stats.overdue.forEach(wo=> { %>
+                                            <div
+                                                class="flex items-start gap-3 p-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition">
+                                                <i class="fa-solid fa-circle-exclamation text-orange-500 mt-1"></i>
+                                                <div class="flex-1">
+                                                    <div class="text-sm font-bold text-gray-800">รถค้างซ่อมเกินกำหนด
+                                                    </div>
+                                                    <div class="text-xs text-gray-500">
+                                                        <%= wo.brand %> (<%= wo.license_plate %>) - <%= wo.days_passed
+                                                                    %> วัน
+                                                    </div>
+                                                    <a href="/admin/work-orders?search=<%= wo.license_plate %>"
+                                                        class="text-xs text-red-500 hover:underline mt-1 block">ติดตามสถานะ</a>
+                                                </div>
+                                            </div>
+                                            <% }) %>
+                                                <% } else { %>
+                                                    <div class="text-gray-400 text-center py-4">ไม่มีการแจ้งเตือน
+                                                    </div>
+                                                    <% } %>
+                                </div>
+                                <div class="mt-4 pt-3 border-t border-gray-100">
+                                    <a href="/admin/work-orders"
+                                        class="block w-full text-center py-2 bg-blue-50 text-blue-600 text-xs rounded hover:bg-blue-100 transition">
+                                        กดดูงานจองคิวใหม่ (<%= stats.cars.incoming %>)
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </main>
+            </div>
+
+
+    </body>
+
+</html>
