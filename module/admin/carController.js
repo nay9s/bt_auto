@@ -105,7 +105,7 @@ function mapStatus(status) {
         case 'checking': return { text: 'กำลังตรวจสอบ', class: 'bg-blue-100 text-blue-800' };
         case 'waiting_parts': return { text: 'รออะไหล่', class: 'bg-orange-100 text-orange-800' };
         case 'repairing': return { text: 'กำลังซ่อม', class: 'bg-purple-100 text-purple-800' };
-        case 'completed': return { text: 'เสร็จสิ้น', class: 'bg-gray-100 text-gray-800' }; // Or "Ready"
+        case 'completed': return { text: 'เสร็จสิ้น', class: 'bg-gray-100 text-gray-800' };
         case 'ready_for_pickup': return { text: 'รอรับรถ', class: 'bg-green-100 text-green-800' };
         default: return { text: 'พร้อมใช้งาน', class: 'bg-green-100 text-green-800' };
     }
@@ -288,7 +288,6 @@ async function deleteCar(id) {
 
         // 4. Delete Car
         await sql.query('DELETE FROM cars WHERE id = ?', [id]);
-
         return { success: true };
     } catch (error) {
         console.error('Error deleting car:', error);

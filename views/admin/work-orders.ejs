@@ -382,11 +382,6 @@
                 async function searchUsers(query) {
                     const resultsDiv = document.getElementById('userSearchResults');
                     const userIdInput = document.getElementById('userIdInput');
-
-                    // Clear previous selection if user types again
-                    // userIdInput.value = ''; 
-                    // Don't clear immediately, allows for correction. But if they submit with invalid text, validation handles it (required field).
-
                     if (query.length < 2) {
                         resultsDiv.classList.add('hidden');
                         return;
@@ -415,7 +410,7 @@
                         } catch (error) {
                             console.error('Search error:', error);
                         }
-                    }, 300); // Debounce
+                    }, 300);
                 }
 
                 function selectUser(user) {
@@ -472,7 +467,6 @@
                         tr.id = `row-${rowCount}`;
                         tr.className = 'bg-white';
 
-                        // Escape function to prevent attribute breaking
                         const escapeHtml = (unsafe) => {
                             if (typeof unsafe !== 'string') return unsafe;
                             return unsafe
@@ -545,17 +539,12 @@
                     const name = selectedOption.getAttribute('data-name');
 
                     if (select.value) {
-                        // Stock item selected
                         nameInput.value = name;
-                        // Optional: make it read-only or allow editing description?
-                        // Usually better to lock name to avoid confusion with stock items.
                         nameInput.readOnly = true;
                         nameInput.classList.add('bg-gray-50');
 
                         priceInput.value = price;
-                        // priceInput.readOnly = true; // Optional: Allow price override? Let's allow for now.
                     } else {
-                        // Manual entry
                         nameInput.value = '';
                         nameInput.readOnly = false;
                         nameInput.classList.remove('bg-gray-50');
@@ -574,7 +563,7 @@
                     const total = quantity * price;
 
                     row.querySelector('.row-total').innerText = '฿' + total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                    row.querySelector('.row-total').setAttribute('data-total', total); // Update data attribute
+                    row.querySelector('.row-total').setAttribute('data-total', total); 
 
                     calculateGrandTotal();
                 }
@@ -598,7 +587,6 @@
                     let hasItems = false;
                     document.querySelectorAll('#itemsTableBody tr').forEach(row => {
                         const inventoryId = row.querySelector('select').value;
-                        // Use class selector to get input values, robust against structure changes
                         const nameInput = row.querySelector('.item-name-input');
                         const qtyInput = row.querySelector('.quantity-input');
                         const priceInput = row.querySelector('.price-input');
@@ -611,7 +599,7 @@
 
                         if (itemName && quantity > 0) {
                             items.push({
-                                inventory_id: inventoryId || null, // Ensure null if empty string
+                                inventory_id: inventoryId || null,
                                 item_name: itemName,
                                 quantity: quantity,
                                 unit_price: unitPrice
@@ -639,11 +627,10 @@
                         form.action = `/admin/work-orders/update/${id}`;
 
                         // 2. Fill Basic Fields
-                        // Set User and wait for cars to load
                         document.getElementById('userIdInput').value = data.user_id;
                         document.getElementById('userSearchInput').value = `${data.first_name} ${data.last_name} (${data.phone})`;
 
-                        await loadUserCars(); // This fetches cars for the selected user
+                        await loadUserCars();
 
                         // Set Car
                         const carSelect = document.getElementById('carSelect');
@@ -656,12 +643,12 @@
 
                         // 3. Fill Items
                         const tbody = document.getElementById('itemsTableBody');
-                        tbody.innerHTML = ''; // Clear existing empty row
-                        rowCount = 0; // Reset counter
+                        tbody.innerHTML = '';
+                        rowCount = 0;
 
                         if (data.items && data.items.length > 0) {
                             data.items.forEach(item => {
-                                addItemRow(); // Create a new row
+                                addItemRow();
                                 const currentRowId = rowCount;
                                 const row = document.getElementById(`row-${currentRowId}`);
 
@@ -669,7 +656,7 @@
                                 const select = row.querySelector('select');
                                 if (item.inventory_id) {
                                     select.value = item.inventory_id;
-                                    onInventorySelect(select, currentRowId); // Trigger change to lock name/set price
+                                    onInventorySelect(select, currentRowId);
                                 } else {
                                     // Manual Item
                                     select.value = "";
@@ -689,10 +676,10 @@
                                 calculateRow(currentRowId);
                             });
                         } else {
-                            addItemRow(); // Add empty if none
+                            addItemRow();
                         }
 
-                        openCreateModal(true); // Open modal (flag to skip adding default row)
+                        openCreateModal(true);
 
                     } catch (e) {
                         console.error(e);
@@ -700,13 +687,11 @@
                     }
                 }
 
-                // Override openCreateModal to support "Edit Mode" clearing
                 const originalOpenCreateModal = openCreateModal;
                 openCreateModal = function (isEdit = false) {
                     document.getElementById('createModal').classList.remove('hidden');
 
                     if (!isEdit) {
-                        // Reset to Create Mode
                         const modalTitle = document.querySelector('#createModal h3');
                         if (modalTitle) modalTitle.innerText = "สร้างใบสั่งซ่อมใหม่";
 
@@ -714,22 +699,19 @@
                         form.action = "/admin/work-orders/create";
                         form.reset();
 
-                        // Clear Search Inputs specifically
                         document.getElementById('userIdInput').value = '';
                         document.getElementById('userSearchInput').value = '';
                         document.getElementById('userSearchResults').classList.add('hidden');
 
-                        // Reset Car Select
                         const carSelect = document.getElementById('carSelect');
                         carSelect.innerHTML = '<option value="">กรุณาเลือกลูกค้าก่อน</option>';
                         carSelect.disabled = true;
                         carSelect.classList.add('bg-gray-50');
 
-                        // Clean Table
                         document.getElementById('itemsTableBody').innerHTML = '';
                         rowCount = 0;
-                        addItemRow(); // One empty row
-                        addItemRow(); // One empty row
+                        addItemRow();
+                        addItemRow();
                     }
                 }
 

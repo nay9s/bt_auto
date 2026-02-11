@@ -13,7 +13,7 @@ services:
       
     ports:
     #<External-Port> : <InDocker-Port>
-      - "3307:3306"
+      - "3306:3306"
     volumes:
     #Keep-SQL-Data-In-This-Path
       - mysql_data:/var/lib/mysql

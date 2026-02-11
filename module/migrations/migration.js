@@ -29,8 +29,6 @@ async function runMigrations() {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         `);
         console.log('Migration: Cars table checked/created.');
-
-        // Check vin column safely
         const [vinColumn] = await sql.query(`
             SELECT COLUMN_NAME
             FROM information_schema.COLUMNS

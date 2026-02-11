@@ -6,11 +6,7 @@
     <body class="bg-gray-50 text-gray-800 font-kanit">
 
         <%- include('partials/sidebar', { path: '/admin/cars' }) %>
-
-            <!-- Main Content -->
             <div class="lg:ml-64 min-h-screen flex flex-col transition-all duration-300">
-
-                <!-- Top Header -->
                 <header
                     class="bg-white shadow-sm h-16 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-10">
                     <div class="flex items-center gap-4">
@@ -27,14 +23,13 @@
                                 <%= user.firstName %>
                                     <%= user.lastName %>
                             </div>
-                            <div class="text-xs text-gray-500">เจ้าของอู่</div>
+                            <div class="text-xs text-gray-500">Admin</div>
                         </div>
                         <img src="https://ui-avatars.com/api/?name=<%= user.firstName %>+<%= user.lastName %>&background=009933&color=fff"
                             alt="Admin" class="w-9 h-9 rounded-full object-cover border border-gray-200">
                     </div>
                 </header>
 
-                <!-- Page Content -->
                 <main class="flex-1 p-4 lg:p-8">
 
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -246,7 +241,7 @@
                 </main>
             </div>
 
-            <!-- Car Modal (Shared for Add/Edit) -->
+            <!-- Car Modal -->
             <div id="carModal"
                 class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
                 <div class="bg-white rounded-xl shadow-lg w-full max-w-lg transform transition-all scale-95 opacity-0"
@@ -479,14 +474,12 @@
                     }, 300);
                 });
 
-                // Close search when clicking outside
                 document.addEventListener('click', (e) => {
                     if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
                         searchResults.classList.add('hidden');
                     }
                 });
 
-                // Check for error in URL
                 const urlParams = new URLSearchParams(window.location.search);
                 const error = urlParams.get('error');
                 if (error) {

@@ -1,6 +1,4 @@
-
 const { promisePool: sql } = require('./module/sql/mysql');
-
 async function updateSchema() {
     try {
         console.log('Checking cars table schema...');

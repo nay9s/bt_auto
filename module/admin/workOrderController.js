@@ -30,7 +30,7 @@ async function getWorkOrders(page = 1, limit = 10, search = '', status = '') {
         ${status && status !== 'all' ? 'AND wo.status = ?' : ''}
     `;
 
-    const [countResult] = await sql.query(countQuery, queryParams); // Use queryParams for count
+    const [countResult] = await sql.query(countQuery, queryParams); 
     const totalItems = countResult[0].total;
 
     query += ` ORDER BY wo.created_at DESC LIMIT ? OFFSET ?`;
@@ -102,7 +102,6 @@ async function createWorkOrder(data) {
         const { car_id, service_type, description, status, appointment_date, items } = data;
         let totalCost = 0;
 
-        // 1. Insert Work Order
         const [result] = await connection.query(`
             INSERT INTO work_orders (car_id, service_type, description, status, appointment_date, created_at)
             VALUES (?, ?, ?, ?, ?, NOW())
@@ -110,10 +109,8 @@ async function createWorkOrder(data) {
 
         const workOrderId = result.insertId;
 
-        // 2. Log Initial Status
         await logStatusChange(workOrderId, status || 'pending', connection);
 
-        // 3. Insert Items (if any)
         if (items && items.length > 0) {
             for (const item of items) {
                 const itemTotal = parseFloat(item.quantity) * parseFloat(item.unit_price);
@@ -124,7 +121,6 @@ async function createWorkOrder(data) {
                     VALUES (?, ?, ?, ?, ?, ?)
                 `, [workOrderId, item.inventory_id || null, item.item_name, item.quantity, item.unit_price, itemTotal]);
 
-                // Deduct stock if inventory item
                 if (item.inventory_id) {
                     await connection.query(`
                         UPDATE inventory SET quantity = quantity - ? WHERE id = ?
@@ -133,7 +129,6 @@ async function createWorkOrder(data) {
             }
         }
 
-        // 4. Update Total Cost
         await connection.query(`
             UPDATE work_orders SET cost = ? WHERE id = ?
         `, [totalCost, workOrderId]);
@@ -149,7 +144,6 @@ async function createWorkOrder(data) {
     }
 }
 
-// Helper: Get users for dropdown
 async function getUsersForDropdown() {
     const [users] = await sql.query(`
         SELECT id, first_name, last_name, phone FROM users ORDER BY first_name ASC
@@ -176,7 +170,6 @@ async function updateWorkOrder(id, data) {
         const { car_id, service_type, description, status, appointment_date, items } = data;
         let totalCost = 0;
 
-        // 1. Restore Stock for Old Items
         console.log('[UpdateWO] Restoring stock...'); // DEBUG
         const [oldItems] = await connection.query('SELECT * FROM work_order_items WHERE work_order_id = ?', [id]);
         for (const item of oldItems) {
@@ -186,14 +179,11 @@ async function updateWorkOrder(id, data) {
             }
         }
 
-        // 2. Delete Old Items
         console.log('[UpdateWO] Deleting old items...'); // DEBUG
         await connection.query('DELETE FROM work_order_items WHERE work_order_id = ?', [id]);
 
-        // 3. Update Work Order Details
         console.log('[UpdateWO] Updating WO details...'); // DEBUG
 
-        // 3.1 Check if status changed
         const [currentWO] = await connection.query('SELECT status FROM work_orders WHERE id = ?', [id]);
         if (currentWO.length > 0 && currentWO[0].status !== status) {
             await logStatusChange(id, status, connection);
@@ -205,7 +195,6 @@ async function updateWorkOrder(id, data) {
             WHERE id = ?
         `, [car_id, service_type, description, status, appointment_date, id]);
 
-        // 4. Insert New Items (Same logic as create)
         console.log(`[UpdateWO] Inserting ${items ? items.length : 0} new items...`); // DEBUG
         if (items && items.length > 0) {
             for (const item of items) {
@@ -217,7 +206,6 @@ async function updateWorkOrder(id, data) {
                     VALUES (?, ?, ?, ?, ?, ?)
                 `, [id, item.inventory_id || null, item.item_name, item.quantity, item.unit_price, itemTotal]);
 
-                // Deduct stock if inventory item
                 if (item.inventory_id) {
                     console.log(`[UpdateWO] Deducting item ${item.inventory_id}, qty: ${item.quantity}`); // DEBUG
                     await connection.query(`
@@ -227,7 +215,6 @@ async function updateWorkOrder(id, data) {
             }
         }
 
-        // 5. Update Total Cost
         console.log(`[UpdateWO] Updating total cost to ${totalCost}...`); // DEBUG
         await connection.query(`
             UPDATE work_orders SET cost = ? WHERE id = ?
@@ -253,16 +240,12 @@ async function deleteWorkOrder(id) {
     try {
         await connection.beginTransaction();
 
-        // 1. Restore Stock
         const [items] = await connection.query('SELECT * FROM work_order_items WHERE work_order_id = ?', [id]);
         for (const item of items) {
             if (item.inventory_id) {
                 await connection.query('UPDATE inventory SET quantity = quantity + ? WHERE id = ?', [item.quantity, item.inventory_id]);
             }
         }
-
-        // 2. Delete Work Order (Cascade will delete items, but safer to rely on table cascading or manual)
-        // Since we defined foreign key with ON DELETE CASCADE, deleting WO is enough.
         await connection.query('DELETE FROM work_orders WHERE id = ?', [id]);
 
         await connection.commit();

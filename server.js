@@ -53,8 +53,6 @@ app.get('/home', requireAuth, async (req, res) => {
             ORDER BY wo.appointment_date DESC, wo.created_at DESC
         `, [userId]);
 
-    // Query 2 latest history items
-    // Query 2 latest completed work orders for history
     const [historyItems] = await sql.query(`
         SELECT wo.service_type, wo.appointment_date AS service_date
         FROM work_orders wo
@@ -64,7 +62,6 @@ app.get('/home', requireAuth, async (req, res) => {
         LIMIT 2
     `, [userId]);
 
-    // Prepare data for view
     const statusTranslation = {
       'pending': 'รอดำเนินการ',
       'checking': 'กำลังตรวจเช็ค',
@@ -79,16 +76,14 @@ app.get('/home', requireAuth, async (req, res) => {
       formattedDate: order.appointment_date ? new Date(order.appointment_date).toLocaleDateString('th-TH') : 'ไม่ระบุ'
     }));
 
-    // Check user object and ensure properties exist (fixing firstName vs first_name mismatch)
     const userSession = req.session.user;
     const userView = {
       ...userSession,
       firstName: userSession.first_name || userSession.firstName,
       lastName: userSession.last_name || userSession.lastName,
-      roles: userSession.role || userSession.roles // Handle potential role property mismatch
+      roles: userSession.role || userSession.roles
     };
 
-    // ส่งข้อมูลไปที่หน้า home.ejs
     res.render('user/home', {
       user: userView,
       path: '/home',
@@ -104,9 +99,6 @@ app.get('/home', requireAuth, async (req, res) => {
 app.get('/car-status', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
-    // Fetch all work orders for the user, ordered by date
-    // We want to show the *latest* status for each car, or just list all active repairs.
-    // Let's list all active repairs + recently completed ones.
     const [orders] = await sql.query(`
             SELECT 
                 wo.id AS work_order_id,
@@ -131,7 +123,6 @@ app.get('/car-status', requireAuth, async (req, res) => {
     const statusSteps = ['pending', 'checking', 'waiting_parts', 'repairing', 'repair_done', 'ready_for_pickup'];
 
     const formattedOrders = await Promise.all(orders.map(async (order) => {
-      // Determine active step index
       let activeStepIndex = 0;
       switch (order.status) {
         case 'pending': activeStepIndex = 0; break;
@@ -143,7 +134,6 @@ app.get('/car-status', requireAuth, async (req, res) => {
         default: activeStepIndex = 0;
       }
 
-      // Fetch History Logs
       const [historyLogs] = await sql.query(`
           SELECT status, created_at 
           FROM work_order_history 
@@ -151,28 +141,20 @@ app.get('/car-status', requireAuth, async (req, res) => {
           ORDER BY created_at ASC
       `, [order.work_order_id]);
 
-      // Map history dates to steps
       const stepsDates = {};
       historyLogs.forEach(log => {
-        // Format date: "10 Feb 2024" or similar
         const dateStr = new Date(log.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
         const timeStr = new Date(log.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
         const fullDate = `${dateStr} ${timeStr}`;
 
-        // Map status to step index/key
-        // 0: pending, 1: checking, 2: waiting_parts, 3: repairing, 5: ready_for_pickup
-        // Note: 'completed' not shown in timeline usually, but if it is, it's step 6
         if (log.status === 'pending') stepsDates[0] = fullDate;
         if (log.status === 'checking') stepsDates[1] = fullDate;
         if (log.status === 'waiting_parts') stepsDates[2] = fullDate;
         if (log.status === 'repairing') stepsDates[3] = fullDate;
-        // Step 4 is "Repair Done" (implied by ready_for_pickup start?) -> Let's use repairing end or just skip for now
-        // Actually, if we have ready_for_pickup, that's step 5. 
         if (log.status === 'ready_for_pickup') stepsDates[5] = fullDate;
         if (log.status === 'completed') stepsDates[6] = fullDate;
       });
 
-      // Special case: If created_at exists in order, use it for step 0 if not in history (for old orders)
       if (!stepsDates[0] && order.created_at) {
         stepsDates[0] = new Date(order.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }) + ' ' + new Date(order.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
       }
@@ -180,7 +162,7 @@ app.get('/car-status', requireAuth, async (req, res) => {
       return {
         ...order,
         activeStepIndex,
-        stepsDates, // Pass dates to view
+        stepsDates,
         formattedDate: order.appointment_date ? new Date(order.appointment_date).toLocaleDateString('th-TH') : '-',
         formattedEndDate: order.end_date ? new Date(order.end_date).toLocaleDateString('th-TH') : '-'
       };
@@ -219,7 +201,7 @@ app.post('/add-car', requireAuth, (req, res) => {
 
 app.get('/car-details', requireAuth, async (req, res) => {
   const workOrderId = req.query.id;
-  const userId = req.session.user.id; // Security check to ensure user owns the order
+  const userId = req.session.user.id;
 
   if (!workOrderId) {
     return res.redirect('/home');
@@ -247,12 +229,10 @@ app.get('/car-details', requireAuth, async (req, res) => {
         `, [workOrderId, userId]);
 
     if (rows.length === 0) {
-      return res.redirect('/home'); // Not found or unauthorized
+      return res.redirect('/home');
     }
 
     const order = rows[0];
-
-    // Prepare data for view
     const statusTranslation = {
       'pending': 'รอดำเนินการ',
       'checking': 'กำลังตรวจเช็ค',
@@ -268,7 +248,6 @@ app.get('/car-details', requireAuth, async (req, res) => {
       formattedCost: new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(order.cost || 0)
     };
 
-    // Ensure user object has correct properties
     const userSession = req.session.user;
     const userView = {
       ...userSession,
@@ -293,7 +272,6 @@ app.get('/car-details', requireAuth, async (req, res) => {
 app.get('/history', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
-    // Fetch all completed work orders for the user
     const [historyItems] = await sql.query(`
         SELECT 
             wo.id AS work_order_id,
@@ -312,9 +290,6 @@ app.get('/history', requireAuth, async (req, res) => {
         ORDER BY wo.appointment_date DESC, wo.created_at DESC
     `, [userId]);
 
-    // Fetch items for each history entry (optional, but good for details)
-    // For now, we'll just show the main info. If we want details, we can do a loop or join.
-    // Let's attach items to each order for the detailed view in history.ejs
     for (const item of historyItems) {
       const [orderItems] = await sql.query(`
             SELECT item_name, quantity, unit_price FROM work_order_items WHERE work_order_id = ?
@@ -452,7 +427,6 @@ app.get('/admin/dashboard', requireAuth, requireAdmin, async (req, res) => {
   try {
     const stats = await getDashboardStats();
 
-    // Check user object and ensure properties exist (fixing firstName vs first_name mismatch)
     const userSession = req.session.user;
     const userView = {
       ...userSession,
@@ -472,12 +446,6 @@ app.get('/admin/dashboard', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// Configure Multer
-// ... (omitted)
-
-// (Skipping to routes)
-
-// Update Work Order
 app.post('/admin/work-orders/update/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     const items = JSON.parse(req.body.itemsJson || '[]');
@@ -552,8 +520,6 @@ app.get('/admin/customers/export', requireAuth, requireAdmin, async (req, res) =
   try {
     const search = req.query.search || '';
     const csvData = await exportCustomers(search);
-
-    // Add BOM for Excel UTF-8 compatibility
     const bom = '\ufeff';
     const csvContent = bom + csvData;
 
@@ -738,8 +704,7 @@ app.get('/admin/work-orders', requireAuth, requireAdmin, async (req, res) => {
     const data = await getWorkOrders(page, limit, search, status);
     const users = await getUsersForDropdown();
 
-    // Get inventory items for the dropdown in modal
-    const inventoryData = await getInventory(1, 1000, '', ''); // Fetch all (limited to 1000)
+    const inventoryData = await getInventory(1, 1000, '', '');
 
     const userSession = req.session.user;
     const userView = {
@@ -766,16 +731,8 @@ app.get('/admin/work-orders', requireAuth, requireAdmin, async (req, res) => {
 })
 
 app.post('/admin/work-orders/create', requireAuth, requireAdmin, async (req, res) => {
-  // Parse numeric values from form
   const rawItems = req.body.items || [];
-  const items = Array.isArray(rawItems) ? rawItems : [rawItems]; // Handle single item case if needed, but normally it's JSON from frontend or array
-
-  // Note: Since we will likely use client-side JS to build the JSON object for items, 
-  // we might want to accept a JSON string for 'items' or handle traditional form array inputs.
-  // For this implementation, let's assume the frontend sends a structured JSON string in a hidden field 'itemsJson'
-  // OR we parse traditional form data. Let's start with a simpler approach: receiving JSON body fits better for complex nested data.
-  // However, standard form submission sends form-urlencoded.
-  // Let's rely on a hidden input 'itemsJson' which contains the array of items.
+  const items = Array.isArray(rawItems) ? rawItems : [rawItems];
 
   let parsedItems = [];
   if (req.body.itemsJson) {
