@@ -18,15 +18,6 @@ set DB_PASS=pass
 set SQL_FILE=database.sql
 set MAX_WAIT=30
 
-REM ================= CHECK FOLDER =================
-for %%I in ("%cd%") do set CURRENT_DIR=%%~nxI
-if /I not "%CURRENT_DIR%"=="%PROJECT_NAME%" (
-    echo ❌ กรุณาเข้าโฟลเดอร์ %PROJECT_NAME% ก่อน
-    pause
-    exit /b 1
-)
-echo ✅ โฟลเดอร์ถูกต้อง
-
 REM ================= START DOCKER DESKTOP =================
 echo 🚀 เปิด Docker Desktop...
 start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"

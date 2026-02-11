@@ -17,14 +17,6 @@ DB_PASS="pass"
 SQL_FILE="database.sql"
 MAX_WAIT=30
 
-# ================= CHECK FOLDER =================
-CURRENT_DIR="$(basename "$PWD")"
-if [[ "$CURRENT_DIR" != "$PROJECT_NAME" ]]; then
-  echo "❌ กรุณาเข้าโฟลเดอร์ $PROJECT_NAME ก่อน"
-  exit 1
-fi
-echo "✅ โฟลเดอร์ถูกต้อง"
-
 # ================= START DOCKER =================
 echo "🚀 เปิด Docker Desktop..."
 if [[ "$OSTYPE" == "darwin"* ]]; then
