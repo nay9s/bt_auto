@@ -103,7 +103,7 @@ REM Import Database
 REM ==================================================
 if exist %SQL_FILE% (
     echo 📥 Import database...
-    docker exec -i bt_auto_sql mysql -u user -ppass bt_auto < database.sql
+    docker exec -i bt_auto_sql mysql -u user -ppass bt_auto < init.sql
     if errorlevel 1 (
         echo ❌ Import database ล้มเหลว
         pause
