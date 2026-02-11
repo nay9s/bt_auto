@@ -94,3 +94,6 @@ echo DB_PORT=3306
 # รูปเล่มรายงาน
 [ดูได้ที่นี่ : รูปเล่มรายงาน](./how_to_install/ระบบจัดการอู่ซ่อมรถรูปเล่ม.pdf)
 
+# Database Schema
+![](./schema.png)
+
