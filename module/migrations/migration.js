@@ -6,7 +6,7 @@ async function waitForDatabase(retries = 30, delay = 2000) {
             await sql.query('SELECT 1');
             console.log('Database connected successfully.');
             return;
-        } catch (err) {
+        } catch {
             console.log(`Database not ready, retrying in ${delay / 1000}s... (${i + 1}/${retries})`);
             await new Promise(res => setTimeout(res, delay));
         }
@@ -19,17 +19,38 @@ async function runMigrations() {
         await waitForDatabase();
         console.log('Checking for database migrations...');
 
-        // Check for 'vin' column in 'cars' table
-        const [columns] = await sql.query("SHOW COLUMNS FROM cars LIKE 'vin'");
-        if (columns.length === 0) {
+        /* ================= CARS ================= */
+        await sql.query(`
+            CREATE TABLE IF NOT EXISTS cars (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                license_plate VARCHAR(50),
+                vin VARCHAR(50),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        `);
+        console.log('Migration: Cars table checked/created.');
+
+        // Check vin column safely
+        const [vinColumn] = await sql.query(`
+            SELECT COLUMN_NAME
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'cars'
+              AND COLUMN_NAME = 'vin'
+        `);
+
+        if (vinColumn.length === 0) {
             console.log('Applying migration: Add vin column to cars table');
-            await sql.query("ALTER TABLE cars ADD COLUMN vin VARCHAR(50) COLLATE utf8mb4_unicode_ci AFTER license_plate");
-            console.log('Migration applied successfully.');
+            await sql.query(`
+                ALTER TABLE cars
+                ADD COLUMN vin VARCHAR(50) COLLATE utf8mb4_unicode_ci
+            `);
+            console.log('Migration applied: vin column added.');
         } else {
             console.log('Migration skipped: vin column already exists.');
         }
 
-        // 4. Create History Table
+        /* ================= HISTORY ================= */
         await sql.query(`
             CREATE TABLE IF NOT EXISTS history (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -42,7 +63,7 @@ async function runMigrations() {
         `);
         console.log('Migration: History table checked/created.');
 
-        // 5. Create Inventory Table
+        /* ================= INVENTORY ================= */
         await sql.query(`
             CREATE TABLE IF NOT EXISTS inventory (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -51,8 +72,8 @@ async function runMigrations() {
                 category VARCHAR(50) NOT NULL,
                 quantity INT NOT NULL DEFAULT 0,
                 min_quantity INT NOT NULL DEFAULT 5,
-                cost_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-                selling_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                cost_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                selling_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
                 supplier VARCHAR(100),
                 image_url TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -61,7 +82,7 @@ async function runMigrations() {
         `);
         console.log('Migration: Inventory table checked/created.');
 
-        // 6. Create Work Order Items Table
+        /* ================= WORK ORDER ITEMS ================= */
         await sql.query(`
             CREATE TABLE IF NOT EXISTS work_order_items (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -69,33 +90,30 @@ async function runMigrations() {
                 inventory_id INT DEFAULT NULL,
                 item_name VARCHAR(255) NOT NULL,
                 quantity INT NOT NULL DEFAULT 1,
-                unit_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-                total_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                unit_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                total_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (work_order_id) REFERENCES work_orders(id) ON DELETE CASCADE,
                 FOREIGN KEY (inventory_id) REFERENCES inventory(id) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         `);
         console.log('Migration: Work Order Items table checked/created.');
 
-        // 7. Create Work Order History Table
+        /* ================= WORK ORDER HISTORY ================= */
         await sql.query(`
             CREATE TABLE IF NOT EXISTS work_order_history (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 work_order_id INT NOT NULL,
                 status VARCHAR(50) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_by INT DEFAULT NULL,
-                FOREIGN KEY (work_order_id) REFERENCES work_orders(id) ON DELETE CASCADE
+                updated_by INT DEFAULT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         `);
         console.log('Migration: Work Order History table checked/created.');
 
-        console.log('All migrations completed successfully.');
+        console.log('🎉 All migrations completed successfully.');
 
     } catch (error) {
-        console.error('Migration failed:', error);
-        // Don't exit process, just log error, maybe database is not ready or other issue
+        console.error('Migration failed:', error.message);
     }
 }
 
