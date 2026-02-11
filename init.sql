@@ -34,9 +34,14 @@ CREATE TABLE IF NOT EXISTS `cars` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `cars_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table bt_auto.cars: ~0 rows (approximately)
+REPLACE INTO `cars` (`id`, `user_id`, `brand`, `model`, `year`, `license_plate`, `vin`, `image_url`, `created_at`, `updated_at`) VALUES
+	(1, 3, 'Ferrari 849 Testarossa', '-', '2025', '123AD', '1HG', '/uploads/cars/1770824415428.webp', '2026-02-11 15:40:15', '2026-02-11 15:40:15'),
+	(2, 4, 'Honda ', 'Civic', '2026', 'พะเยา 99', '1MG', '/uploads/cars/1770824867379.webp', '2026-02-11 15:47:47', '2026-02-11 15:47:47'),
+	(3, 6, 'Tesla', 'S Plaid', '2025', 'กรุงเทพมหานคร 555', '110', '/uploads/cars/1770825095734.jpg', '2026-02-11 15:51:35', '2026-02-11 15:51:35'),
+	(4, 3, 'Honda', 'Civic', '2025', 'ตาก 675', '2GG', '/uploads/cars/1770825510936.webp', '2026-02-11 15:58:30', '2026-02-11 15:58:30');
 
 -- Dumping structure for table bt_auto.history
 CREATE TABLE IF NOT EXISTS `history` (
@@ -68,9 +73,12 @@ CREATE TABLE IF NOT EXISTS `inventory` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `sku` (`sku`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table bt_auto.inventory: ~0 rows (approximately)
+REPLACE INTO `inventory` (`id`, `name`, `sku`, `category`, `quantity`, `min_quantity`, `cost_price`, `selling_price`, `supplier`, `image_url`, `created_at`, `updated_at`) VALUES
+	(1, 'ยางรถยนต์', 'Tyre', 'ช่วงล่าง', 7, 5, 10000.00, 12000.00, 'bt_auto', '/uploads/inventory/1770824560573.jpg', '2026-02-11 15:42:40', '2026-02-11 15:59:09'),
+	(2, 'แม็ก', 'MAX', 'ช่วงล่าง', 3, 5, 32000.00, 32500.00, 'bt_auto', '/uploads/inventory/1770824667867.jpg', '2026-02-11 15:44:27', '2026-02-11 15:48:28');
 
 -- Dumping structure for table bt_auto.roles
 CREATE TABLE IF NOT EXISTS `roles` (
@@ -98,7 +106,13 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
 
 -- Dumping data for table bt_auto.user_roles: ~1 rows (approximately)
 REPLACE INTO `user_roles` (`user_id`, `role_id`, `assigned_at`) VALUES
-	(1, 2, '2026-02-11 15:01:14');
+	(1, 2, '2026-02-11 15:01:14'),
+	(2, 1, '2026-02-11 15:35:52'),
+	(3, 1, '2026-02-11 15:36:18'),
+	(4, 1, '2026-02-11 15:36:56'),
+	(5, 1, '2026-02-11 15:37:35'),
+	(6, 1, '2026-02-11 15:38:01'),
+	(7, 1, '2026-02-11 15:38:21');
 
 -- Dumping structure for table bt_auto.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -114,11 +128,17 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table bt_auto.users: ~1 rows (approximately)
+-- Dumping data for table bt_auto.users: ~7 rows (approximately)
 REPLACE INTO `users` (`id`, `username`, `password_hash`, `email`, `first_name`, `last_name`, `phone`, `created_at`, `updated_at`) VALUES
-	(1, 'admin', '$2b$10$FMuKVxPn0BnMLg6bowW1Wu7fmsyD3tSKm48wUuE9B0C2mGwNPXEKW', 'admin@gmail.com', 'admin', 'admin', '0', '2026-02-11 15:01:14', '2026-02-11 15:01:14');
+	(1, 'admin', '$2b$10$FMuKVxPn0BnMLg6bowW1Wu7fmsyD3tSKm48wUuE9B0C2mGwNPXEKW', 'admin@gmail.com', 'admin', 'admin', '0', '2026-02-11 15:01:14', '2026-02-11 15:01:14'),
+	(2, '0987654321', '$2b$10$rZMU8O6CWjRtWWosl8AB1.vnyLEssuD/6R27OH1r8.akhwAjEOtU2', 'rakdee@gmail.com', 'รักดี', 'สุดใจ', '0987654321', '2026-02-11 15:35:52', '2026-02-11 15:35:52'),
+	(3, '098777666', '$2b$10$Q7LOouyoPoqkMH5aYOUUkOgE3YKVzslcpn.5kpKyx6W4XgXDLwoa2', 'somsri@gmail.com', 'สมศรี', 'มีให้เห็น', '098777666', '2026-02-11 15:36:18', '2026-02-11 15:36:18'),
+	(4, '099999999', '$2b$10$Ut24rq8gfOQM.isblSwMWuhtHjfel0PF/HkczA7s38.fViqAc5rbW', 'rakkrai@gmail.com', 'รักใคร', 'ไม่เป็น', '099999999', '2026-02-11 15:36:56', '2026-02-11 15:36:56'),
+	(5, '0837162332', '$2b$10$Dda7vz6jClIVjMm/itHdber5TF8e72Zl.Dvhj9xEh/A9CXMtx/jdu', 'whereissomsri@gmail.com', 'สมศรี', 'มีไหน', '0837162332', '2026-02-11 15:37:35', '2026-02-11 15:37:35'),
+	(6, '0112345672', '$2b$10$ROZrMEUCpl8VLXUWOUHKxeC3JVNXhaBSmFnM6OuojXezEgDKdM/OS', 'rukter@gmail.com', 'รักเธอ', 'จังเลย', '0112345672', '2026-02-11 15:38:01', '2026-02-11 15:38:01'),
+	(7, '0123334442', '$2b$10$dg50X4dw8ycJpgsPW1QDV.g.l0QiZXcP.ga/8BHfpE3cb6t6/MkLC', 'reandee@gmail.com', 'เรียนดี', 'มีชัย', '0123334442', '2026-02-11 15:38:21', '2026-02-11 15:38:21');
 
 -- Dumping structure for table bt_auto.work_order_history
 CREATE TABLE IF NOT EXISTS `work_order_history` (
@@ -130,9 +150,21 @@ CREATE TABLE IF NOT EXISTS `work_order_history` (
   PRIMARY KEY (`id`),
   KEY `work_order_id` (`work_order_id`),
   CONSTRAINT `work_order_history_ibfk_1` FOREIGN KEY (`work_order_id`) REFERENCES `work_orders` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table bt_auto.work_order_history: ~0 rows (approximately)
+REPLACE INTO `work_order_history` (`id`, `work_order_id`, `status`, `created_at`, `updated_by`) VALUES
+	(1, 1, 'pending', '2026-02-11 15:45:08', NULL),
+	(2, 1, 'checking', '2026-02-11 15:45:24', NULL),
+	(3, 1, 'waiting_parts', '2026-02-11 15:45:28', NULL),
+	(4, 1, 'ready_for_pickup', '2026-02-11 15:45:32', NULL),
+	(5, 1, 'completed', '2026-02-11 15:45:39', NULL),
+	(6, 2, 'checking', '2026-02-11 15:48:21', NULL),
+	(7, 2, 'waiting_parts', '2026-02-11 15:48:28', NULL),
+	(8, 3, 'checking', '2026-02-11 15:53:06', NULL),
+	(9, 3, 'ready_for_pickup', '2026-02-11 15:53:40', NULL),
+	(10, 4, 'checking', '2026-02-11 15:59:02', NULL),
+	(11, 4, 'repairing', '2026-02-11 15:59:09', NULL);
 
 -- Dumping structure for table bt_auto.work_order_items
 CREATE TABLE IF NOT EXISTS `work_order_items` (
@@ -149,9 +181,15 @@ CREATE TABLE IF NOT EXISTS `work_order_items` (
   KEY `inventory_id` (`inventory_id`),
   CONSTRAINT `work_order_items_ibfk_1` FOREIGN KEY (`work_order_id`) REFERENCES `work_orders` (`id`) ON DELETE CASCADE,
   CONSTRAINT `work_order_items_ibfk_2` FOREIGN KEY (`inventory_id`) REFERENCES `inventory` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table bt_auto.work_order_items: ~0 rows (approximately)
+REPLACE INTO `work_order_items` (`id`, `work_order_id`, `inventory_id`, `item_name`, `quantity`, `unit_price`, `total_price`, `created_at`) VALUES
+	(6, 1, 1, 'ยางรถยนต์', 1, 12000.00, 12000.00, '2026-02-11 15:45:39'),
+	(9, 2, 2, 'แม็ก', 1, 32500.00, 32500.00, '2026-02-11 15:48:28'),
+	(10, 2, NULL, 'แรง', 1, 500.00, 500.00, '2026-02-11 15:48:28'),
+	(12, 3, 1, 'ยางรถยนต์', 1, 12000.00, 12000.00, '2026-02-11 15:53:40'),
+	(14, 4, 1, 'ยางรถยนต์', 1, 12000.00, 12000.00, '2026-02-11 15:59:09');
 
 -- Dumping structure for table bt_auto.work_orders
 CREATE TABLE IF NOT EXISTS `work_orders` (
@@ -169,9 +207,14 @@ CREATE TABLE IF NOT EXISTS `work_orders` (
   PRIMARY KEY (`id`),
   KEY `car_id` (`car_id`),
   CONSTRAINT `work_orders_ibfk_1` FOREIGN KEY (`car_id`) REFERENCES `cars` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table bt_auto.work_orders: ~0 rows (approximately)
+REPLACE INTO `work_orders` (`id`, `car_id`, `service_type`, `description`, `status`, `appointment_date`, `start_date`, `end_date`, `cost`, `created_at`, `updated_at`) VALUES
+	(1, 1, 'เปลี่ยนยางรถ', '', 'completed', '2026-02-10 00:00:00', NULL, NULL, 12000.00, '2026-02-11 15:45:08', '2026-02-11 15:45:39'),
+	(2, 2, 'เปลี่ยนแม็ก', '', 'waiting_parts', '2026-02-11 00:00:00', NULL, NULL, 33000.00, '2026-02-11 15:48:21', '2026-02-11 15:48:28'),
+	(3, 3, 'เปลี่ยนล้อ', 'ตะปูแทงล้อ', 'ready_for_pickup', '2026-02-14 00:00:00', NULL, NULL, 12000.00, '2026-02-11 15:53:06', '2026-02-11 15:53:40'),
+	(4, 4, 'เปลี่ยนล้อแม็ก', '', 'repairing', '2026-02-11 00:00:00', NULL, NULL, 12000.00, '2026-02-11 15:59:02', '2026-02-11 15:59:09');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
