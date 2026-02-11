@@ -6,7 +6,7 @@ REM ================= CONFIG =================
 set PROJECT_NAME=bt_auto
 set MYSQL_CONTAINER=bt_auto_sql
 
-set MYSQL_PORT=3307
+set MYSQL_PORT=3306
 
 set DB_ROOT_USER=root
 set DB_ROOT_PASS=root

@@ -5,7 +5,7 @@ set -e
 PROJECT_NAME="bt_auto"
 MYSQL_CONTAINER="bt_auto_sql"
 
-MYSQL_PORT=3307
+MYSQL_PORT=3306
 
 DB_ROOT_USER="root"
 DB_ROOT_PASS="root"
