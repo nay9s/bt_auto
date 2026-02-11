@@ -16,7 +16,7 @@
 
 
 -- Dumping database structure for bt_auto
-CREATE DATABASE IF NOT EXISTS `bt_auto` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE IF NOT EXISTS `bt_auto` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `bt_auto`;
 
 -- Dumping structure for table bt_auto.cars
@@ -96,7 +96,9 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
   CONSTRAINT `user_roles_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table bt_auto.user_roles: ~0 rows (approximately)
+-- Dumping data for table bt_auto.user_roles: ~1 rows (approximately)
+REPLACE INTO `user_roles` (`user_id`, `role_id`, `assigned_at`) VALUES
+	(1, 2, '2026-02-11 15:01:14');
 
 -- Dumping structure for table bt_auto.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -112,9 +114,11 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table bt_auto.users: ~0 rows (approximately)
+-- Dumping data for table bt_auto.users: ~1 rows (approximately)
+REPLACE INTO `users` (`id`, `username`, `password_hash`, `email`, `first_name`, `last_name`, `phone`, `created_at`, `updated_at`) VALUES
+	(1, 'admin', '$2b$10$FMuKVxPn0BnMLg6bowW1Wu7fmsyD3tSKm48wUuE9B0C2mGwNPXEKW', 'admin@gmail.com', 'admin', 'admin', '0', '2026-02-11 15:01:14', '2026-02-11 15:01:14');
 
 -- Dumping structure for table bt_auto.work_order_history
 CREATE TABLE IF NOT EXISTS `work_order_history` (
@@ -167,7 +171,7 @@ CREATE TABLE IF NOT EXISTS `work_orders` (
   CONSTRAINT `work_orders_ibfk_1` FOREIGN KEY (`car_id`) REFERENCES `cars` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table bt_auto.work_orders: ~2 rows (approximately)
+-- Dumping data for table bt_auto.work_orders: ~0 rows (approximately)
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
