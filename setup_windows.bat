@@ -126,7 +126,9 @@ echo.
 
 REM ================= LOGS =================
 echo ===============================
-echo 📜 Docker Logs (Ctrl+C เพื่อออก)
+echo 📜 หากเกิด Error ให้ใช้คำสั่ง docker compose down -v
+echo 📜 แล้วทำการ docker compose up อีกครั้ง
+echo 📜 สามารถเข้าเว็บได้ที่ http://localhost:3000
 echo ===============================
 docker compose logs -f
 
