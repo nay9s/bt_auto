@@ -10,7 +10,7 @@ set MYSQL_CONTAINER=bt_auto_sql
 set DB_ROOT_USER=root
 set DB_ROOT_PASS=root
 set DB_NAME=bt_auto
-set SQL_FILE=database.sql
+set SQL_FILE=/init.sql/database.sql
 set MAX_WAIT=20
 
 REM ==================================================
